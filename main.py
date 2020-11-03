@@ -1,3 +1,6 @@
 import translater
+import speechtotext
+import core
 
-print(translater.translate("Salut tout le monde"))
+core.echo(" >> " + translater.translate("Salut tout le monde"))
+core.echo(" >> " + speechtotext.toText("Enregistrement.wav"))

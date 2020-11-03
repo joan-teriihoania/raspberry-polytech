@@ -16,6 +16,10 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
+done = f"{bcolors.OKGREEN}done{bcolors.ENDC}"
+failed = f"{bcolors.FAIL}failed{bcolors.ENDC}"
+aborted = f"{bcolors.WARNING}aborted{bcolors.ENDC}"
+
 COMMAND_OPTIONS = {
     "display": {
         "TIPS": True,
