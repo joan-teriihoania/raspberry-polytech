@@ -1,6 +1,6 @@
 import gtts
 
-def toText(str,lang) :
+def toSpeech(str,lang) :
   # make request to google to get synthesis
   tts = gtts.gTTS(str,lang)
   # save the audio file
