@@ -1,7 +1,8 @@
 # raspberry-polytech
 Projet raspberry FASE ASIOT
 
-# Bibliothèques à faire
+# A faire
+## Bibliothèques (équipements)
  - HAUT PARLEUR à faire (joan)
  - MICROPHONE à faire (joan)
  - CONSOLE à faire (joan)
@@ -19,7 +20,7 @@ Projet raspberry FASE ASIOT
  > Vert  : DEMARRÉ ET CONNECTÉ AU SERVEUR INTERNET
  > Bleu  : DEMARRÉ MAIS ECHEC DE CONNEXION AU SERVEUR INTERNET
 
-# Trucs à faire
+## Modules
  - Tester googletrans (python)
  - Tester speech to text (https://www.geeksforgeeks.org/python-convert-speech-to-text-and-text-to-speech/)
  - Tester text to speech (https://pypi.org/project/pyttsx3/)
