@@ -1,5 +1,6 @@
 import sys
 import time
+import os
 import terminalsize
 
 CURSOR_UP_ONE = '\x1b[1A' 
@@ -29,6 +30,15 @@ COMMAND_OPTIONS = {
 }
 
 
+
+# Function that check if a given path of a file exists.
+# @Parameters :
+# path  String
+# @Return Boolean
+def fileExists(path):
+    if(os.path.isfile(path)):
+        if(os.path.exists(path)):
+            return True
 
 def deletePrevLines(n=1): 
     for _ in range(n): 

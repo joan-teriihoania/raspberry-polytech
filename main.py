@@ -7,7 +7,7 @@ import core
 try:
     core.echo(" >> " + translater.translate("Salut tout le monde"))
     core.echo(" >> " + audio.speechToText("ressources/Enregistrement.wav"))
-    audio.toSpeech("Ciao","it")
+    audio.textToSpeech("Ciao","it")
 except KeyboardInterrupt:
     core.terminate(-1, "Interrupted before completion by user")
 except SystemExit:

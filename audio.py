@@ -1,13 +1,23 @@
 import core
 import speech_recognition as sr
 import gtts
+import os
 
-def textToSpeech(str,lang) :
-  # make request to google to get synthesis
-  tts = gtts.gTTS(str,lang)
-  # save the audio file
-  tts.save("audio.mp3")
-  
+def textToSpeech(string,lang, filepath="./ressources/audio.mp3"):
+    if(core.fileExists(filepath)):
+        os.unlink(filepath)
+    
+    while not(core.fileExists(filepath)):
+        try:
+            core.echo('Converting text ('+lang+') into audio transcripts ...')
+            tts = gtts.gTTS(text=string, lang=lang)
+            tts.save(filepath)
+            core.overecho('Converting text ('+lang+') into audio transcripts ...' + core.done)
+            return
+        except KeyboardInterrupt:
+            return
+        except:
+            core.overecho('Converting text ('+lang+') into audio transcripts ...' + core.failed)
  #methode pour voir toutes les langues disponibles : gtts.lang.tts_langs()
 
 
