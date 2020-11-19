@@ -35,10 +35,6 @@ def deletePrevLines(n=1):
         sys.stdout.write(ERASE_LINE) 
 
 
-def overecho(toPrint, type="", end="\n"):
-    deletePrevLines()
-    echo(toPrint, type, end)
-
 # Function to print text ands logs on the console with time and type information
 # @Parameters :
 #  toPrint  String
@@ -66,11 +62,24 @@ def echo(toPrint, type="", end="\n", tab="  "):
 
     if(isinstance(toPrint, list)):
         for elt in toPrint:
-            echo(tab + elt, type, end)
+            echo(tab + str(elt), type, end)
+        return
+    
+    
+    if(len(toPrint.split("\n"))>1):
+        echo(str(toPrint).split("\n"), type, end, tab)
         return
 
+
     if(toPrint == ""): return
-    print(f"[{color}{type}{bcolors.ENDC}][{time.strftime('%H:%M:%S', time.localtime())}] {color}{toPrint}{bcolors.ENDC}", end=end)
+    
+    toPrint = f"[{color}{type}{bcolors.ENDC}][{time.strftime('%H:%M:%S', time.localtime())}] {color}{toPrint}{bcolors.ENDC}"
+    columns, rows = terminalsize.get_terminal_size()
+    if(len(toPrint) >= columns):
+        print(str(toPrint[:columns-10]) + "...")
+    else:
+        print(toPrint, end=end)
+    
 
 # Function that exit the algorithm with an exit code of 0.
 # Only purpose : Simplify the exit instruction.
