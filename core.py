@@ -1,5 +1,6 @@
 import sys
 import time
+import terminalsize
 
 CURSOR_UP_ONE = '\x1b[1A' 
 ERASE_LINE = '\x1b[2K'
@@ -34,6 +35,10 @@ def deletePrevLines(n=1):
         sys.stdout.write(CURSOR_UP_ONE) 
         sys.stdout.write(ERASE_LINE) 
 
+
+def overecho(toPrint, type="", end="\n"):
+    deletePrevLines()
+    echo(toPrint, type, end)
 
 # Function to print text ands logs on the console with time and type information
 # @Parameters :
