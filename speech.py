@@ -1,5 +1,15 @@
 import core
 import speech_recognition as sr
+import gtts
+
+def textToSpeech(str,lang) :
+  # make request to google to get synthesis
+  tts = gtts.gTTS(str,lang)
+  # save the audio file
+  tts.save("ressources/audio.mp3")
+  
+ #methode pour voir toutes les langues disponibles : gtts.lang.tts_langs()
+
 
 # Initialize recognizer class (for recognizing the speech)
 r = sr.Recognizer()
@@ -7,7 +17,7 @@ r = sr.Recognizer()
 # Reading Audio file as source
 # listening the audio file and store in audio_text variable
 
-def toText(filepath, lang="fr-FR"):
+def speechToText(filepath, lang="fr-FR"):
     with sr.AudioFile(filepath) as source:
         audio_text = r.listen(source)
         # recoginize_() method will throw a request error if the API is unreachable, hence using exception handling
