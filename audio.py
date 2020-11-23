@@ -8,16 +8,18 @@ def textToSpeech(string,lang, filepath="./ressources/audio.mp3"):
         os.unlink(filepath)
     
     while not(core.fileExists(filepath)):
+        core.echo('Converting text ('+lang+') into audio transcripts ...')
+        
         try:
-            core.echo('Converting text ('+lang+') into audio transcripts ...')
             tts = gtts.gTTS(text=string, lang=lang)
             tts.save(filepath)
             core.overecho('Converting text ('+lang+') into audio transcripts ...' + core.done)
             return
         except KeyboardInterrupt:
             return
-        except:
+        except ValueError:
             core.overecho('Converting text ('+lang+') into audio transcripts ...' + core.failed)
+        
  #methode pour voir toutes les langues disponibles : gtts.lang.tts_langs()
 
 
