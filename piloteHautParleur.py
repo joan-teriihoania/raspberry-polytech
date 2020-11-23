@@ -29,6 +29,7 @@ try:
 
         # If button is pressed, turn on LED and play sound
         current_state = GPIO.input(btn_pin)
+        print(current_state)
         if (current_state == False) and (prev_state == True):
             if mixer.get_busy():
                 sound.stop()
