@@ -1,5 +1,9 @@
 import time
 import grovepi
+import time
+import RPi.GPIO as GPIO
+from pygame import mixer
+import driverI2C
 
 # Pins definitions
 btn_pin = 4
@@ -9,16 +13,6 @@ grovepi.pinMode(btn_pin, "INPUT")
 grovepi.pinMode(led_pin, "OUTPUT")
 
 grovepi.analogWrite(led_pin, 10)
-
-while True:
-    btn_state = grovepi.digitalRead(btn_pin)
-    print(btn_state)
-    time.sleep(.5)
-
-
-
-import RPi.GPIO as GPIO
-from pygame import mixer
 
 # Set up pins
 GPIO.setmode(GPIO.BCM)

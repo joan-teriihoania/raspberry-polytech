@@ -3,9 +3,12 @@ import audio
 import traceback
 import sys
 import core
+import driverI2C
 
 def exec():
     try:
+        driverI2C.setRGB(0,255,0)
+        driverI2C.setText("Bye!")
         core.echo(" >> " + translater.translate("Salut tout le monde"))
         core.echo(" >> " + audio.speechToText("ressources/Enregistrement.wav"))
         audio.textToSpeech("Ciao","it")
