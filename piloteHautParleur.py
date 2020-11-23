@@ -3,8 +3,8 @@ import RPi.GPIO as GPIO
 from pygame import mixer
 
 # Pins definitions
-btn_pin = 4
-led_pin = 12
+btn_pin = 2
+led_pin = 0
 
 # Set up pins
 GPIO.setmode(GPIO.BCM)
@@ -27,6 +27,7 @@ try:
 
         # If button is pressed, turn on LED and play sound
         current_state = GPIO.input(btn_pin)
+        print(current_state)
         if (current_state == False) and (prev_state == True):
             if mixer.get_busy():
                 sound.stop()
