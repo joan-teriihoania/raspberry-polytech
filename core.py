@@ -29,8 +29,6 @@ COMMAND_OPTIONS = {
     }
 }
 
-
-
 # Function that check if a given path of a file exists.
 # @Parameters :
 # path  String
@@ -104,5 +102,8 @@ def terminate(code = 0, msg = ""):
         if(code >= 0): typeReason = "EXIT"
         echo(msg, typeReason, tab="")
 
+    import driverI2C
+    driverI2C.setColor('black')
+    driverI2C.setText('')
     echo("Script terminated with code " + str(code), "EXIT")
     sys.exit(code)
