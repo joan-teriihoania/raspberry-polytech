@@ -3,6 +3,7 @@ from array import array
 from struct import pack
 from ctypes import *
 import driverI2C
+import driverSpeaker
 
 import os
 import pyaudio
@@ -28,9 +29,11 @@ asound.snd_lib_error_set_handler(c_error_handler)
 p = pyaudio.PyAudio()
 asound.snd_lib_error_set_handler(None)
 
-
 THRESHOLD = 500
-CHUNK_SIZE = 4096
+nbRefreshPerSecond = 2
+# Refresh per second must be lower than 2 due to performance issues
+
+CHUNK_SIZE = int(44100/nbRefreshPerSecond)
 FORMAT = pyaudio.paInt16
 RATE = 44100
 
@@ -56,7 +59,6 @@ core.echo([
     "Default device name : " + nameOfMicro,
     "Device selected     : ("+str(dev_index)+") " + p.get_device_info_by_index(dev_index).get('name')
 ], tab="")
-
 
 
 
@@ -117,72 +119,85 @@ def record():
     blank sound to make sure VLC et al can play 
     it without getting chopped off.
     """
-    
+
+    asound.snd_lib_error_set_handler(c_error_handler)
+    p = pyaudio.PyAudio()
+    asound.snd_lib_error_set_handler(None)
     stream = p.open(format=FORMAT, channels=1, rate=RATE,
-        input=True, input_device_index = dev_index,
+        input=True, input_device_index=dev_index,
         frames_per_buffer=CHUNK_SIZE)
 
+    frames = []
     num_silent = 0
     snd_started = False
-
     r = array('h')
 
     driverI2C.display("Dites quelque chose !")  
     core.echo("Awaiting for sound...")
 
-    try:
-        while 1:
-            # little endian, signed short
-            snd_data = array('h', stream.read(CHUNK_SIZE, exception_on_overflow = False))
-            if byteorder == 'big':
-                snd_data.byteswap()
-            r.extend(snd_data)
+    while 1:
+        # little endian, signed short
+        streamRead = stream.read(CHUNK_SIZE, exception_on_overflow = True)
+        snd_data = array('h', streamRead)
+        if byteorder == 'big':
+            snd_data.byteswap()
+        r.extend(snd_data)
 
-            silent = is_silent(snd_data)
-            #core.echo(str(silent))
+        silent = is_silent(snd_data)
 
-            if silent and snd_started:
-                num_silent += 1
-            elif not silent and not snd_started:
-                driverI2C.display("En écoute...")
-                core.overecho("Awaiting for sound..." + core.done)
-                core.echo("Awaiting for silence...")
-                snd_started = True
 
-            if snd_started and num_silent > 30:
-                driverI2C.display("Traitement...")
-                core.overecho("Awaiting for silence..." + core.done)
-                break
-    except KeyboardInterrupt:
-        core.echo("User has requested to stop the recording", "ERROR")
+        if snd_started:
+            core.overecho("Awaiting for silence... ("+str(round(max(snd_data)/THRESHOLD, 2))+" < 1)")
+            frames.append(streamRead)
+        else:
+            core.overecho("Awaiting for sound... ("+str(round(max(snd_data)/THRESHOLD, 2))+" > 1)")
+            if(len(frames) > nbRefreshPerSecond):
+                frames.pop(0)
+            frames.append(streamRead)
+
+        if silent and snd_started:
+            num_silent += 1
+        
+        if not silent and not snd_started:
+            driverI2C.display("En écoute...")
+            core.overecho("Awaiting for sound..." + core.done)
+            core.echo("Awaiting for silence...")
+            snd_started = True
+        
+        if snd_started and num_silent > nbRefreshPerSecond:
+            driverI2C.display("Traitement...")
+            core.overecho("Awaiting for silence..." + core.done)
+            break
 
     core.echo("Saving into file...")
     sample_width = p.get_sample_size(FORMAT)
+
+
     stream.stop_stream()
     stream.close()
     p.terminate()
 
-    r = normalize(r)
-    r = trim(r)
-    r = add_silence(r, 0.5)
+    #r = normalize(r)
+    #r = trim(r)
+    #r = add_silence(r, 0.5)
     core.overecho("Saving into file..." + core.done)
-    return sample_width, r
+    return sample_width, frames
 
 def record_to_file(path):
     "Records from the microphone and outputs the resulting data to 'path'"
-    sample_width, data = record()
-    data = pack('<' + ('h'*len(data)), *data)
+    sample_width, frames = record()
+    #data = pack('<' + ('h'*len(data)), *data)
 
     wf = wave.open(path, 'wb')
     wf.setnchannels(1)
     wf.setsampwidth(sample_width)
     wf.setframerate(RATE)
-    wf.writeframes(data)
+    wf.writeframes(b''.join(frames))
     wf.close()
 
 def listen(filepath='ressources/test1.wav'):
-    if(core.fileExists(filepath)):
-        os.unlink(filepath)
+    #if(core.fileExists(filepath)):
+    #    os.unlink(filepath)
 
     record_to_file(filepath)
     return core.fileExists(filepath)
