@@ -10,6 +10,11 @@ for ii in range(audio.get_device_count()):
     if(audio.get_device_info_by_index(ii).get('name') == "USB PnP Sound Device: Audio (hw:1,0)"):
         dex_index = ii
 
+core.echo([
+    "Default device name : " + nameOfMicro,
+    "Device selected     : ("+dev_index+") " + audio.get_device_info_by_index(dev_index).get('name')
+])
+
 form_1 = pyaudio.paInt16 # 16-bit resolution
 chans = 1 # 1 channel
 samp_rate = 44100 # 44.1kHz sampling rate
