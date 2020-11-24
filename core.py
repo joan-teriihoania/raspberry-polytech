@@ -103,7 +103,8 @@ def terminate(code = 0, msg = ""):
         echo(msg, typeReason, tab="")
 
     import driverI2C
-    driverI2C.setColor('black')
+    driverI2C.setRGB(0,0,0)
     driverI2C.setText('')
+
     echo("Script terminated with code " + str(code), "EXIT")
     sys.exit(code)
