@@ -2,6 +2,11 @@ import core
 import speech_recognition as sr
 import gtts
 import os
+import driverSpeaker
+
+def say(string, lang, filepath="./ressources/audio.mp3"):
+    textToSpeech(string, lang, filepath)
+    driverSpeaker.play("./ressources/audio.mp3")
 
 def textToSpeech(string,lang, filepath="./ressources/audio.mp3"):
     if(core.fileExists(filepath)):
