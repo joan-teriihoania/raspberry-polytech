@@ -12,7 +12,7 @@ for ii in range(audio.get_device_count()):
 
 core.echo([
     "Default device name : " + nameOfMicro,
-    "Device selected     : ("+dev_index+") " + audio.get_device_info_by_index(dev_index).get('name')
+    "Device selected     : ("+str(dev_index)+") " + audio.get_device_info_by_index(dev_index).get('name')
 ])
 
 form_1 = pyaudio.paInt16 # 16-bit resolution
