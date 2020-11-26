@@ -81,7 +81,7 @@ else:
 #################################
 
 THRESHOLD = 500
-nbRefreshPerSecond = 10 # High refresh may cause data loss due to the microphone buffer overflowing. RECOMMEND 2..3 (will automatically adjust)
+nbRefreshPerSecond = 5 # High refresh may cause data loss due to the microphone buffer overflowing. RECOMMEND 2..3 (will automatically adjust)
 FORMAT = pyaudio.paInt16
 RATE = int(p.get_device_info_by_index(dev_index)['defaultSampleRate'])
 soundBarLength = 50
@@ -142,7 +142,6 @@ def add_silence(snd_data, seconds):
 def get_soundbar(snd_data):
     soundLevel = max(snd_data)-soundBarMin
     soundBarLengthBelowThresh = 0
-    soundBarLengthOverThresh = soundBarLength
     
     if(soundLevel < 0):
         soundLevel = 0
@@ -150,7 +149,6 @@ def get_soundbar(snd_data):
         soundLevel = soundBarMax
     if(soundBarMin < THRESHOLD):
         soundBarLengthBelowThresh = int((THRESHOLD-soundBarMin)/soundBarMax*soundBarLength)
-        soundBarLengthOverThresh = soundBarLength - soundBarLengthBelowThresh
 
     soundBarFilled = int(soundLevel/soundBarMax*soundBarLength)
     soundbarFilledBelowThresh = soundBarLengthBelowThresh
@@ -161,9 +159,9 @@ def get_soundbar(snd_data):
         soundbarNotFilledBelowThresh = soundBarLengthBelowThresh - soundBarFilled
 
     soundBarFilledOverThresh = soundBarFilled - soundbarFilledBelowThresh
-    soundBarEmpty = soundBarLength - soundbarNotFilledBelowThresh - soundBarFilledOverThresh - soundbarFilledBelowThresh
+    soundBarNotFilledOverThresh = soundBarLength - soundbarNotFilledBelowThresh - soundBarFilledOverThresh - soundbarFilledBelowThresh
 
-    return core.bcolors.WARNING + soundBarFillChar*soundbarFilledBelowThresh + soundBarEmptyChar*soundbarNotFilledBelowThresh +  "|" + soundBarFillChar*soundBarFilledOverThresh + soundBarEmptyChar*soundBarEmpty + core.bcolors.OKCYAN
+    return core.bcolors.WARNING + soundBarFillChar*soundbarFilledBelowThresh + soundBarEmptyChar*soundbarNotFilledBelowThresh +  "|" + soundBarFillChar*soundBarFilledOverThresh + soundBarEmptyChar*soundBarNotFilledOverThresh + core.bcolors.OKCYAN
 
 def record():
     """
