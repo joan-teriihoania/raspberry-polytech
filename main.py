@@ -81,7 +81,7 @@ while True:
     except KeyboardInterrupt:
         driverI2C.setRGB(0,0,0)
         driverI2C.display('')
-        core.terminate(-1, "Interrupted before completion by user")
+        core.terminate(-1, "Interrupted by user")
     except SystemExit as e:
         for (key, reason) in exitCodes.items():
             if(e.code == key):
