@@ -143,7 +143,7 @@ def record():
 
     while 1:
         # little endian, signed short
-        streamRead = stream.read(CHUNK_SIZE, exception_on_overflow = True)
+        streamRead = stream.read(CHUNK_SIZE, exception_on_overflow = False)
         snd_data = array('h', streamRead)
         if byteorder == 'big':
             snd_data.byteswap()
