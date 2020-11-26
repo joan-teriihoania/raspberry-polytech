@@ -6,6 +6,7 @@ import traceback
 import sys
 import core
 import driverI2C
+import driverButton
 import driverSpeaker
 import driverMicro
 import time
@@ -33,6 +34,13 @@ systemLanguage = "en"
 
 def main(from_lang='en', to_lang='fr'):
     driverI2C.setColor('white')
+    driverI2C.display("Press the\nbutton")
+    core.echo("Waiting for button to be pressed...")
+    while not(driverButton.isButtonPushed()):
+        continue
+    core.overecho("Waiting for button to be pressed..." + core.done)
+
+    
     if not(driverMicro.listen()):
         core.echo("An error occured during the record", "ERROR")
         return False
@@ -66,21 +74,15 @@ def main(from_lang='en', to_lang='fr'):
     driverSpeaker.play('ressources/audio.mp3')
 
 
-usedExitCodes = []
-for (key, reason) in exitCodes.items():
-    if(key in usedExitCodes):
-        core.terminate(-999, "ConfigurationError: Exit code ["+str(key)+"] is declared more than once")
-    usedExitCodes.append(key)
-
-
 while True:
     try:
         if(main() == False):
-            driverI2C.setRGB(255,255,0)
+            driverI2C.setColor('red')
             driverI2C.display('I did not understand')
             audio.say("I am sorry, I did not understand.", systemLanguage)
     except KeyboardInterrupt:
-        driverI2C.setRGB(0,0,0)
+        driverI2C.setColor("black")
+        driverMicro.shutdown = True
         driverI2C.display('')
         core.terminate(-1, "Interrupted by user")
     except SystemExit as e:
@@ -90,14 +92,15 @@ while True:
                 if(e.code <= 0):
                     driverI2C.display(reason)
                     time.sleep(1)
-                    driverI2C.setRGB(0,0,0)
+                    driverMicro.shutdown = True
+                    driverI2C.setColor("black")
                     driverI2C.display('')
                     core.terminate(e.code, reason)
         
         if(e.code != None):
             core.echo([
                 "SystemExit code "+str(e.code)+" could not be recognized as an accepted shutdown code",
-                "You can add vocal commands with exit codes in main.py",
+                "You can add voice commands with exit codes in main.py",
                 "You can add your special exit codes for logging purposes as well"
             ], type="WARN")
     except:
