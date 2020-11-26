@@ -23,7 +23,8 @@ commands = {
 
 exitCodes = {
     0: "Good bye!",
-    -1: "An error occured during execution and caused a system crash",
+    -1: "An unexpected error occured during execution that caused a system crash",
+    -2: "We encountered an issue with your microphone, try rebooting. If this does not resolve your problem, get your device checked in the nearest repair shop available",
     1: "Translation memory usage has exceeded daily quota"
 }
 
@@ -46,7 +47,7 @@ def main(from_lang='en', to_lang='fr'):
     for (key, command) in commands.items():
         if(text.lower().replace(" ", "") == key):
             audio.say(command['message'], systemLanguage)
-            core.echo("Vocal command [" + key.upper() + "] has been triggered")
+            core.echo("Voice command [" + key.upper() + "] has been triggered")
             core.terminate(command['code'])
 
     #core.echo(" >> " + str(text))

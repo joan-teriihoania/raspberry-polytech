@@ -11,7 +11,9 @@ import core
 import wave
 
 
-
+#################################
+# PYAUDIO INIT WITH LOG HIDER
+#################################
 
 # From alsa-lib Git 3fd4ab9be0db7c7430ebd258f2717a976381715d
 # $ grep -rn snd_lib_error_handler_t
@@ -29,23 +31,16 @@ asound.snd_lib_error_set_handler(c_error_handler)
 p = pyaudio.PyAudio()
 asound.snd_lib_error_set_handler(None)
 
-THRESHOLD = 500
-nbRefreshPerSecond = 4
-# Refresh per second must be lower than 2 due to performance issues
 
-CHUNK_SIZE = int(44100/nbRefreshPerSecond)
-FORMAT = pyaudio.paInt16
-RATE = 44100
-
-
-
-soundBarLength = 50
-soundBarMax = THRESHOLD*3
-soundBarMin = 0
-
+#################################
+# DEVICE VERIFICATION
+#################################
 
 dev_index = 0 # device index found by p.get_device_info_by_index(ii)
-nameOfMicro = "USB PnP Sound Device: Audio (hw:1,0)"
+dev_found = False
+listOfAcceptedDevices = [
+    "USB PnP Sound Device: Audio (hw:1,0)"
+]
 listOfDevices = []
 
 core.echo("Retrieving audio capable devices...")
@@ -54,18 +49,48 @@ for ii in range(p.get_device_count()):
 core.overecho("Retrieving audio capable devices..." + core.done)
 
 ii = 0
-core.echo("Searching for default device ["+nameOfMicro+"]...")
+core.echo("Searching for accepted devices...")
 for device in listOfDevices:
-    if(device == nameOfMicro):
+    if(device in listOfAcceptedDevices):
         dev_index = ii
+        dev_found = True
     ii += 1
-core.overecho("Searching for default device ["+nameOfMicro+"]..." + core.done)
-core.echo([
-    "Default device name : " + nameOfMicro,
-    "Device selected     : ("+str(dev_index)+") " + p.get_device_info_by_index(dev_index).get('name')
-], tab="")
+if(dev_found):
+    core.overecho("Searching for default device..." + core.done)
+    core.echo(":: Device selected >> " + listOfDevices[dev_index])
+else:
+    core.overecho("Searching for default device..." + core.failed)
+    core.echo([
+        "Could not find a connected device which is in the accepted devices list",
+        "Check if one of them is connected or that the devices accepted are correct",
+    ], "FATAL", tab="")
+
+    core.echo("List of connected devices : ", "FATAL")
+    for device in listOfDevices:
+        core.echo(" - " + device, "FATAL")
+    core.echo("List of accepted devices : ", "FATAL")
+    for device in listOfAcceptedDevices:
+        core.echo(" - " + device, "FATAL")
+
+    core.terminate(-1)
 
 
+
+#################################
+# BASIC CONFIGURATION VARIABLES
+#################################
+
+THRESHOLD = 500
+nbRefreshPerSecond = 10 # High refresh may cause data loss due to the microphone buffer overflowing. RECOMMEND 2..3 (will automatically adjust)
+FORMAT = pyaudio.paInt16
+RATE = int(p.get_device_info_by_index(dev_index)['defaultSampleRate'])
+soundBarLength = 50
+soundBarMax = THRESHOLD*3
+soundBarMin = 0
+soundBarFillChar = "#"
+soundBarEmptyChar = "_"
+REFRESH_PER_SEC_CORRECTION = 0
+nb_overflowed = 0
 
 
 def is_silent(snd_data):
@@ -138,7 +163,7 @@ def get_soundbar(snd_data):
     soundBarFilledOverThresh = soundBarFilled - soundbarFilledBelowThresh
     soundBarEmpty = soundBarLength - soundbarNotFilledBelowThresh - soundBarFilledOverThresh - soundbarFilledBelowThresh
 
-    return core.bcolors.WARNING + "#"*soundbarFilledBelowThresh + "-"*soundbarNotFilledBelowThresh +  "|" + "#"*soundBarFilledOverThresh + "-"*soundBarEmpty + core.bcolors.OKCYAN
+    return core.bcolors.WARNING + soundBarFillChar*soundbarFilledBelowThresh + soundBarEmptyChar*soundbarNotFilledBelowThresh +  "|" + soundBarFillChar*soundBarFilledOverThresh + soundBarEmptyChar*soundBarEmpty + core.bcolors.OKCYAN
 
 def record():
     """
@@ -151,25 +176,65 @@ def record():
     it without getting chopped off.
     """
 
+    global REFRESH_PER_SEC_CORRECTION
+    global nb_overflowed
+
+    APPLIED_CHUNK_SIZE = int(RATE/(nbRefreshPerSecond-REFRESH_PER_SEC_CORRECTION))
+
     asound.snd_lib_error_set_handler(c_error_handler)
     p = pyaudio.PyAudio()
     asound.snd_lib_error_set_handler(None)
+    
+
     stream = p.open(format=FORMAT, channels=1, rate=RATE,
         input=True, input_device_index=dev_index,
-        frames_per_buffer=CHUNK_SIZE)
+        frames_per_buffer=APPLIED_CHUNK_SIZE)
 
     timeoutSilence = nbRefreshPerSecond*3
     frames = []
     num_silent = 0
+    exceptionOnOverflow = True
     snd_started = False
     r = array('h')
 
-    driverI2C.display("Say something !")  
-    core.echo("Awaiting for sound...")
+    driverI2C.display("Say something !")
+    print()
 
     while 1:
-        # little endian, signed short
-        streamRead = stream.read(CHUNK_SIZE, exception_on_overflow = False)
+        streamRead = False
+        try:
+            streamRead = stream.read(APPLIED_CHUNK_SIZE, exception_on_overflow = exceptionOnOverflow)
+        except OSError:
+            if(nb_overflowed == 0):
+                core.overecho("MicRead(InputOverflowed) : (CHUNK="+str(APPLIED_CHUNK_SIZE)+")", "ERROR")
+                core.echo([
+                    "The microphone buffer has exceeded specified CHUNK_SIZE due to high [nbRefreshSecond]", 
+                    "You should consider lowering it to avoid data loss. It will be automatically decreased",
+                    "during execution until there is no more input overflow."
+                ], "WARN")
+                print()
+            else:
+                if(REFRESH_PER_SEC_CORRECTION < nbRefreshPerSecond-1):
+                    REFRESH_PER_SEC_CORRECTION += 1
+                    APPLIED_CHUNK_SIZE = int(RATE/(nbRefreshPerSecond-REFRESH_PER_SEC_CORRECTION))
+                    p.close(stream)
+                    stream = p.open(format=FORMAT, channels=1, rate=RATE,
+                        input=True, input_device_index=dev_index,
+                        frames_per_buffer=APPLIED_CHUNK_SIZE)
+                    core.overecho("MicRead(InputOverflowed) : [nbRefreshPerSecond] have been automatically decreased to "+str(nbRefreshPerSecond - REFRESH_PER_SEC_CORRECTION)+" (CHUNK="+str(APPLIED_CHUNK_SIZE)+")", "WARN")
+                    print()
+                else:
+                    core.overecho("[nbRefreshPerSecond] have been decreased by "+str(REFRESH_PER_SEC_CORRECTION)+" (CHUNK="+str(APPLIED_CHUNK_SIZE)+") and cannot be decreased further", "ERROR")
+                    core.echo([
+                        "Input overflow exceptions cannot be resolved and will most certainly cause data loss in recording",
+                        "This is probably caused by performance issues, try rebooting raspberry and checking running processes",
+                        "If this does not fix this issue, consider checking your microphone software and hardware"
+                    ], "WARN")
+                    core.terminate(-2)
+                nb_overflowed = 0
+            nb_overflowed += 1
+            continue
+        
         snd_data = array('h', streamRead)
         if byteorder == 'big':
             snd_data.byteswap()
