@@ -4,11 +4,13 @@ from struct import pack
 from ctypes import *
 import driverI2C
 import driverSpeaker
+import threading
 
 import os
 import pyaudio
 import core
 import wave
+import time
 
 
 #################################
@@ -140,7 +142,10 @@ def add_silence(snd_data, seconds):
     return r
 
 def get_soundbar(snd_data):
+    global listeningSoundLevel
+
     soundLevel = max(snd_data)-soundBarMin
+    listeningSoundLevel = soundLevel
     soundBarLengthBelowThresh = 0
     
     if(soundLevel < 0):
@@ -162,6 +167,28 @@ def get_soundbar(snd_data):
     soundBarNotFilledOverThresh = soundBarLength - soundbarNotFilledBelowThresh - soundBarFilledOverThresh - soundbarFilledBelowThresh
 
     return core.bcolors.WARNING + soundBarFillChar*soundbarFilledBelowThresh + soundBarEmptyChar*soundbarNotFilledBelowThresh +  "|" + soundBarFillChar*soundBarFilledOverThresh + soundBarEmptyChar*soundBarNotFilledOverThresh + core.bcolors.OKCYAN
+
+
+shutdown = False
+listening = False
+listeningSoundLevel = 0
+def listeningAnimation():
+    global listening
+    while not shutdown:
+        while listening and not shutdown:
+            bar = int(listeningSoundLevel / soundBarMax * driverI2C.windowSize)
+            empty = driverI2C.windowSize - bar
+            driverI2C.setText("#"*bar + "\n" + " "*empty + "#"*bar, instant=True)
+            time.sleep(0.05)
+        time.sleep(1)
+
+t = threading.Thread(target=listeningAnimation)
+t.start()
+
+def toggleListeningAnimation():
+    global listening
+    listening = not(listening)
+
 
 def record():
     """
@@ -265,10 +292,13 @@ def record():
             num_silent += 1
         
         if not silent and not snd_started:
-            driverI2C.display("I am listening")
+            driverI2C.setColor("green")
+            toggleListeningAnimation()
             snd_started = True
         
         if snd_started and num_silent > timeoutSilence:
+            driverI2C.setColor("white")
+            toggleListeningAnimation()
             core.overecho("Recording complete", "SUCCESS")
             driverI2C.display("Please wait...")
             break
