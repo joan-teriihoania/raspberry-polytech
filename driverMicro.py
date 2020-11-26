@@ -30,13 +30,18 @@ p = pyaudio.PyAudio()
 asound.snd_lib_error_set_handler(None)
 
 THRESHOLD = 500
-nbRefreshPerSecond = 2
+nbRefreshPerSecond = 4
 # Refresh per second must be lower than 2 due to performance issues
 
 CHUNK_SIZE = int(44100/nbRefreshPerSecond)
 FORMAT = pyaudio.paInt16
 RATE = 44100
 
+
+
+soundBarLength = 50
+soundBarMax = THRESHOLD*2
+soundBarMin = 0
 
 
 dev_index = 0 # device index found by p.get_device_info_by_index(ii)
@@ -127,12 +132,13 @@ def record():
         input=True, input_device_index=dev_index,
         frames_per_buffer=CHUNK_SIZE)
 
+    timeoutSilence = nbRefreshPerSecond*3
     frames = []
     num_silent = 0
     snd_started = False
     r = array('h')
 
-    driverI2C.display("Dites quelque chose !")  
+    driverI2C.display("Say something !")  
     core.echo("Awaiting for sound...")
 
     while 1:
@@ -144,29 +150,46 @@ def record():
         r.extend(snd_data)
 
         silent = is_silent(snd_data)
+        soundLevel = max(snd_data)-soundBarMin
+        if(soundLevel < 0):
+            soundLevel = 0
+        if(soundLevel > soundBarMax):
+            soundLevel = soundBarMax
+        
+        soundBarFilled = int(soundLevel/soundBarMax*soundBarLength)
+        soundBarEmpty = soundBarLength - soundBarFilled
+        soundBar = core.bcolors.WARNING + "#"*soundBarFilled + "-"*soundBarEmpty + core.bcolors.OKCYAN
 
+        if(snd_started):
+            recordingStatus = core.bcolors.OKGREEN + "RECORDING" + core.bcolors.OKCYAN
+        else:
+            recordingStatus = core.bcolors.FAIL + "NOT RECORDING" + core.bcolors.OKCYAN
+        
+        core.overecho("Sound : ["+soundBar+"] ("+recordingStatus+")")
 
         if snd_started:
-            core.overecho("Awaiting for silence... ("+str(round(max(snd_data)/THRESHOLD, 2))+" < 1)")
+            # Waiting for silence
             frames.append(streamRead)
         else:
-            core.overecho("Awaiting for sound... ("+str(round(max(snd_data)/THRESHOLD, 2))+" > 1)")
-            if(len(frames) > nbRefreshPerSecond):
+            # Recording - Waiting for sound but still recording to not miss
+            # to first part of the recording
+            if(len(frames) > timeoutSilence):
                 frames.pop(0)
             frames.append(streamRead)
+        
+        if not silent and snd_started:
+            num_silent = 0
 
         if silent and snd_started:
             num_silent += 1
         
         if not silent and not snd_started:
-            driverI2C.display("En écoute...")
-            core.overecho("Awaiting for sound..." + core.done)
-            core.echo("Awaiting for silence...")
+            driverI2C.display("I am listening")
             snd_started = True
         
-        if snd_started and num_silent > nbRefreshPerSecond:
-            driverI2C.display("Traitement...")
-            core.overecho("Awaiting for silence..." + core.done)
+        if snd_started and num_silent > timeoutSilence:
+            core.overecho("Recording complete", "SUCCESS")
+            driverI2C.display("Please wait...")
             break
 
     core.echo("Saving into file...")
