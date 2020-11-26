@@ -40,7 +40,7 @@ RATE = 44100
 
 
 soundBarLength = 50
-soundBarMax = THRESHOLD*2
+soundBarMax = THRESHOLD*3
 soundBarMin = 0
 
 
@@ -114,6 +114,32 @@ def add_silence(snd_data, seconds):
     r.extend(silence)
     return r
 
+def get_soundbar(snd_data):
+    soundLevel = max(snd_data)-soundBarMin
+    soundBarLengthBelowThresh = 0
+    soundBarLengthOverThresh = soundBarLength
+    
+    if(soundLevel < 0):
+        soundLevel = 0
+    if(soundLevel > soundBarMax):
+        soundLevel = soundBarMax
+    if(soundBarMin < THRESHOLD):
+        soundBarLengthBelowThresh = int((THRESHOLD-soundBarMin)/soundBarMax*soundBarLength)
+        soundBarLengthOverThresh = soundBarLength - soundBarLengthBelowThresh
+
+    soundBarFilled = int(soundLevel/soundBarMax*soundBarLength)
+    soundbarFilledBelowThresh = soundBarLengthBelowThresh
+    soundbarNotFilledBelowThresh = 0
+
+    if(soundBarFilled < soundBarLengthBelowThresh):
+        soundbarFilledBelowThresh = soundBarFilled
+        soundbarNotFilledBelowThresh = soundBarLengthBelowThresh - soundBarFilled
+
+    soundBarFilledOverThresh = soundBarFilled - soundbarFilledBelowThresh
+    soundBarEmpty = soundBarLength - soundbarNotFilledBelowThresh - soundBarFilledOverThresh - soundbarFilledBelowThresh
+
+    return core.bcolors.WARNING + "#"*soundbarFilledBelowThresh + "-"*soundbarNotFilledBelowThresh +  "|" + "#"*soundBarFilledOverThresh + "-"*soundBarEmpty + core.bcolors.OKCYAN
+
 def record():
     """
     Record a word or words from the microphone and 
@@ -150,15 +176,7 @@ def record():
         r.extend(snd_data)
 
         silent = is_silent(snd_data)
-        soundLevel = max(snd_data)-soundBarMin
-        if(soundLevel < 0):
-            soundLevel = 0
-        if(soundLevel > soundBarMax):
-            soundLevel = soundBarMax
-        
-        soundBarFilled = int(soundLevel/soundBarMax*soundBarLength)
-        soundBarEmpty = soundBarLength - soundBarFilled
-        soundBar = core.bcolors.WARNING + "#"*soundBarFilled + "-"*soundBarEmpty + core.bcolors.OKCYAN
+        soundBar = get_soundbar(snd_data)
 
         if(snd_started):
             recordingStatus = core.bcolors.OKGREEN + "RECORDING" + core.bcolors.OKCYAN
