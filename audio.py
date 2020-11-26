@@ -4,7 +4,7 @@ import gtts
 import os
 import driverSpeaker
 
-def say(string, lang, filepath="./ressources/audio.mp3"):
+def say(string, lang="en", filepath="./ressources/audio.mp3"):
     textToSpeech(string, lang, filepath)
     driverSpeaker.play("./ressources/audio.mp3")
 
