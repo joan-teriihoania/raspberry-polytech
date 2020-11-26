@@ -46,13 +46,25 @@ def deletePrevLines(n=1):
 
 def overecho(toPrint, type="", end="\n"):
     deletePrevLines()
-    echo(toPrint, type, end)
+    echo(toPrint, type, end, isoverecho=True)
 
 # Function to print text ands logs on the console with time and type information
 # @Parameters :
 #  toPrint  String
 # @Return void
-def echo(toPrint, type="", end="\n", tab="  "):
+lastToPrint = ""
+nbRepeatPrint = 0
+def echo(toPrint, type="", end="\n", tab="  ", isoverecho=False):
+    global lastToPrint
+    global nbRepeatPrint
+
+    if(not isoverecho):
+        if(toPrint == lastToPrint):
+            nbRepeatPrint += 1
+        else:
+            nbRepeatPrint = 0
+    lastToPrint = toPrint
+
     if(type == ""): type="INFO"
     if(len(type) <= 4): type = type + (" "*(4-len(type)))
     else: type = type[:4]
@@ -86,7 +98,13 @@ def echo(toPrint, type="", end="\n", tab="  "):
 
     if(toPrint == ""): return
     
-    toPrint = f"[{color}{type}{bcolors.ENDC}][{time.strftime('%H:%M:%S', time.localtime())}] {color}{toPrint}{bcolors.ENDC}"
+    repeatTag = ""
+    if(nbRepeatPrint > 0):
+        deletePrevLines()
+        repeatTag = f" [x{nbRepeatPrint}]"
+        time.sleep(0.1)
+
+    toPrint = f"[{color}{type}{bcolors.ENDC}][{time.strftime('%H:%M:%S', time.localtime())}]{repeatTag} {color}{toPrint}{bcolors.ENDC}"
     columns, rows = terminalsize.get_terminal_size()
     if(len(toPrint) >= columns):
         print(str(toPrint[:columns-10]) + "...")
