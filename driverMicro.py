@@ -174,12 +174,26 @@ listening = False
 listeningSoundLevel = 0
 def listeningAnimation():
     global listening
+    refreshTick = 0.05
+    changeColorEvery = 0.5
+    colorChangeTick = (changeColorEvery/refreshTick)
+    colors = ['red', 'yellow', 'green', 'aqua', 'blue', 'pink']
+
     while not shutdown:
+        tick = 0
+        colIndex = 0
         while listening and not shutdown:
             bar = int(listeningSoundLevel / soundBarMax * driverI2C.windowSize)
             empty = driverI2C.windowSize - bar
+            if(tick == colorChangeTick):
+                colIndex += 1
+                tick = 0
+                if(colIndex >= len(colors)):
+                    colIndex = 0
+                driverI2C.setColor(colors[colIndex])
             driverI2C.setText("#"*bar + "\n" + " "*empty + "#"*bar, instant=True)
-            time.sleep(0.05)
+            time.sleep(refreshTick)
+            tick += 1
         time.sleep(1)
 
 t = threading.Thread(target=listeningAnimation)
