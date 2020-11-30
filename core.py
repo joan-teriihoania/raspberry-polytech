@@ -2,9 +2,11 @@ import sys
 import time
 import os
 import terminalsize
+import threading
 
 CURSOR_UP_ONE = '\x1b[1A' 
 ERASE_LINE = '\x1b[2K'
+shutdown = False
 
 class bcolors:
     HEADER = '\033[95m'
@@ -22,6 +24,7 @@ done = f"{bcolors.OKGREEN}done{bcolors.ENDC}"
 failed = f"{bcolors.FAIL}failed{bcolors.ENDC}"
 aborted = f"{bcolors.WARNING}aborted{bcolors.ENDC}"
 
+# Set to FALSE to disable specified channel of echo function
 COMMAND_OPTIONS = {
     "display": {
         "TIPS": True,
@@ -43,14 +46,18 @@ def deletePrevLines(n=1):
         sys.stdout.write(CURSOR_UP_ONE) 
         sys.stdout.write(ERASE_LINE) 
 
-
+# Replace the previous line by a new one
 def overecho(toPrint, type="", end="\n"):
     deletePrevLines()
     echo(toPrint, type, end, isoverecho=True)
 
 # Function to print text ands logs on the console with time and type information
 # @Parameters :
-#  toPrint  String
+#  toPrint  (String | Array)
+#  type String: Type of text [INFO, TIPS, ERROR, SUCCESS, WARN, FATAL] that will influence the formatting
+#  end String: Changes the end of the print() function
+#  tab String: When passing an array in toPrint, the elements are passed recursively one by one with tab at the beginning
+#  isoverecho Bool: Internal variable if the calling func is overecho
 # @Return void
 lastToPrint = ""
 nbRepeatPrint = 0
@@ -112,7 +119,7 @@ def echo(toPrint, type="", end="\n", tab="  ", isoverecho=False):
         print(toPrint, end=end)
     
 
-# Function that exit the algorithm with an exit code of 0.
+# Function that exit the algorithm with an exit code of `code`.
 # Only purpose : Simplify the exit instruction.
 def terminate(code = 0, msg = ""):
     if msg != "":
@@ -122,3 +129,16 @@ def terminate(code = 0, msg = ""):
 
     #echo("Script terminated with code " + str(code), "EXIT")
     sys.exit(code)
+
+# @Desc Remove the check file while the process is running
+# @Note Check file is a file created by a external control process to see if an instance is running
+#       After 3 seconds, if the check file is not deleted, if considers the instance inactive and will execute another one
+def removeCheckFile():
+    while not shutdown:
+        if(fileExists("/home/jopro/raspberry-polytech/ressources/tmp_active_check")):
+            os.unlink("/home/jopro/raspberry-polytech/ressources/tmp_active_check")
+        time.sleep(1)
+
+# Creates a running thread of removeCheckFile() at start
+t = threading.Thread(target=removeCheckFile)
+t.start()

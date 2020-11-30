@@ -8,10 +8,17 @@ import threading
 
 import os
 import pyaudio
+import audio
 import core
 import wave
 import time
 
+
+#################################
+# CONVENTION
+#################################
+# A function that starts with _ is an internal function and should not be used outside
+# A function that starts with __ is an internal function and MUST not be used outside
 
 #################################
 # PYAUDIO INIT WITH LOG HIDER
@@ -41,7 +48,7 @@ asound.snd_lib_error_set_handler(None)
 dev_index = 0 # device index found by p.get_device_info_by_index(ii)
 dev_found = False
 listOfAcceptedDevices = [
-    "USB PnP Sound Device: Audio (hw:1,0)"
+    "USB PnP Sound Device: Audio (hw:1,0)",
 ]
 listOfDevices = []
 
@@ -82,66 +89,33 @@ else:
 # BASIC CONFIGURATION VARIABLES
 #################################
 
-THRESHOLD = 500
-nbRefreshPerSecond = 5 # High refresh may cause data loss due to the microphone buffer overflowing. RECOMMEND 2..3 (will automatically adjust)
+THRESHOLD = 500 # Base value to detect if there is silence or not
+STABILIZED_THRESHOLD = THRESHOLD # Value that is corrected permanently depending on the environment to detect the silence level
+
+nbRefreshPerSecond = 30 # High refresh may cause data loss due to the microphone buffer overflowing. RECOMMEND 2..3 (will automatically adjust)
+REFRESH_PER_SEC_CORRECTION = 0
+CORRECTED_REFRESH_PER_SEC = nbRefreshPerSecond - REFRESH_PER_SEC_CORRECTION
+
 FORMAT = pyaudio.paInt16
 RATE = int(p.get_device_info_by_index(dev_index)['defaultSampleRate'])
 soundBarLength = 50
-soundBarMax = THRESHOLD*3
+soundBarMax = STABILIZED_THRESHOLD*3
 soundBarMin = 0
 soundBarFillChar = "#"
 soundBarEmptyChar = "_"
-REFRESH_PER_SEC_CORRECTION = 0
 nb_overflowed = 0
 
-
-def is_silent(snd_data):
+def _is_silent(snd_data):
     "Returns 'True' if below the 'silent' threshold"
-    return max(snd_data) < THRESHOLD
+    return max(snd_data) < STABILIZED_THRESHOLD
 
-def normalize(snd_data):
-    "Average the volume out"
-    MAXIMUM = 16384
-    times = float(MAXIMUM)/max(abs(i) for i in snd_data)
-
-    r = array('h')
-    for i in snd_data:
-        r.append(int(i*times))
-    return r
-
-def trim(snd_data):
-    "Trim the blank spots at the start and end"
-    def _trim(snd_data):
-        snd_started = False
-        r = array('h')
-
-        for i in snd_data:
-            if not snd_started and abs(i)>THRESHOLD:
-                snd_started = True
-                r.append(i)
-
-            elif snd_started:
-                r.append(i)
-        return r
-
-    # Trim to the left
-    snd_data = _trim(snd_data)
-
-    # Trim to the right
-    snd_data.reverse()
-    snd_data = _trim(snd_data)
-    snd_data.reverse()
-    return snd_data
-
-def add_silence(snd_data, seconds):
-    "Add silence to the start and end of 'snd_data' of length 'seconds' (float)"
-    silence = [0] * int(seconds * RATE)
-    r = array('h', silence)
-    r.extend(snd_data)
-    r.extend(silence)
-    return r
-
-def get_soundbar(snd_data):
+# @Desc Returns a string of the sound to be displayed from the given sound data
+# @Params:
+#   - snd_data (Array): An array as following Array('h', <Stream data>)
+#
+# @Note Uses the basic configuration variables set at the top to format the soundbar
+# @Return String
+def _get_soundbar(snd_data):
     global listeningSoundLevel
 
     soundLevel = max(snd_data)-soundBarMin
@@ -152,8 +126,8 @@ def get_soundbar(snd_data):
         soundLevel = 0
     if(soundLevel > soundBarMax):
         soundLevel = soundBarMax
-    if(soundBarMin < THRESHOLD):
-        soundBarLengthBelowThresh = int((THRESHOLD-soundBarMin)/soundBarMax*soundBarLength)
+    if(soundBarMin < STABILIZED_THRESHOLD):
+        soundBarLengthBelowThresh = int((STABILIZED_THRESHOLD-soundBarMin)/soundBarMax*soundBarLength)
 
     soundBarFilled = int(soundLevel/soundBarMax*soundBarLength)
     soundbarFilledBelowThresh = soundBarLengthBelowThresh
@@ -166,23 +140,34 @@ def get_soundbar(snd_data):
     soundBarFilledOverThresh = soundBarFilled - soundbarFilledBelowThresh
     soundBarNotFilledOverThresh = soundBarLength - soundbarNotFilledBelowThresh - soundBarFilledOverThresh - soundbarFilledBelowThresh
 
-    return core.bcolors.WARNING + soundBarFillChar*soundbarFilledBelowThresh + soundBarEmptyChar*soundbarNotFilledBelowThresh +  "|" + soundBarFillChar*soundBarFilledOverThresh + soundBarEmptyChar*soundBarNotFilledOverThresh + core.bcolors.OKCYAN
+    return (
+        core.bcolors.WARNING +
+        soundBarFillChar*soundbarFilledBelowThresh +
+        soundBarEmptyChar*soundbarNotFilledBelowThresh + 
+        "|" + soundBarFillChar*soundBarFilledOverThresh +
+        soundBarEmptyChar*soundBarNotFilledOverThresh +
+        core.bcolors.OKCYAN
+    )
 
-
-shutdown = False
+# @Desc Displays the soundbar when listening for a user sound input
+# @Note This function is running on another thread to avoid blocking execution
+#       It is changed by using the shared variable listening to toggle
+#       and listeningSoundLevel to update the sound to be displayed
+#
+#       It will shutdown itself when core.shutdown is set to TRUE
 listening = False
 listeningSoundLevel = 0
-def listeningAnimation():
+def __listeningAnimation():
     global listening
     refreshTick = 0.05
     changeColorEvery = 0.5
     colorChangeTick = (changeColorEvery/refreshTick)
     colors = ['red', 'yellow', 'green', 'aqua', 'blue', 'pink']
 
-    while not shutdown:
+    while not core.shutdown:
         tick = 0
         colIndex = 0
-        while listening and not shutdown:
+        while listening and not core.shutdown:
             bar = int(listeningSoundLevel / soundBarMax * driverI2C.windowSize)
             empty = driverI2C.windowSize - bar
             if(tick == colorChangeTick):
@@ -196,29 +181,69 @@ def listeningAnimation():
             tick += 1
         time.sleep(1)
 
-t = threading.Thread(target=listeningAnimation)
+# Runs the function __listeningAnimation() on another thread at startup
+t = threading.Thread(target=__listeningAnimation)
 t.start()
 
+# @Desc Sends to the user a visual and sound to request a sound input
+# @Note Plays a notification sound specified and turns on/off the listening animation
 def toggleListeningAnimation():
     global listening
     listening = not(listening)
+    if(listening): driverSpeaker.play("/home/jopro/raspberry-polytech/ressources/notif_listening.mp3", blocking=False)
+    else: driverSpeaker.play("/home/jopro/raspberry-polytech/ressources/notif_listened.mp3", blocking=False)
+    return listening
 
+# @Desc Edit the STABILIZED_THRESHOLD to the ambient sound level of estimated silence threshold
+# @Param:
+#   - frames (Array): An array of stream.read data collected
+# @Note Will loop only through the frames to a maximum of CORRECTED_REFRESH_PER_SEC
+def _stabilize_threshold(frames):
+    global THRESHOLD
+    global CORRECTED_REFRESH_PER_SEC
+    global STABILIZED_THRESHOLD
+    global soundBarMax
 
-def record():
+    if(len(frames) == 0): return
+    snd_min = max(array('h', frames[0])) # get sound level of first frame
+    snd_max = 0
+
+    for i in range(1, min(CORRECTED_REFRESH_PER_SEC, len(frames))):
+        frame = frames[i]
+        snd_lvl = max(array('h', frame))
+
+        if(snd_lvl > snd_max):
+            snd_max = snd_lvl
+        if(snd_lvl < snd_min):
+            snd_min = snd_lvl
+    
+    if(snd_max == 0): return
+    targetThreshold = int(snd_max*2)
+    if((snd_max - snd_min) <= 100 and targetThreshold != STABILIZED_THRESHOLD):
+        # Sound is stable and steady and considered silent
+        soundBarMax = STABILIZED_THRESHOLD*3
+        STABILIZED_THRESHOLD = targetThreshold
+        #core.overecho("MicRead(SilenceThresholdCorrection) : Threshold for silence detection have been corrected to " + str(STABILIZED_THRESHOLD), "WARN")
+        #print()
+    return
+
+def _record(waitNSecondSilence, auto_silence_threshold_stabilization=True):
     """
-    Record a word or words from the microphone and 
-    return the data as an array of signed shorts.
+    Wait for when the ambient sound level exceeds the silence threshold
+    while updating the latter if not recording.
+    The starts the recording and wait for silence and returns the frames
+    recorded.
 
-    Normalizes the audio, trims silence from the 
-    start and end, and pads with 0.5 seconds of 
-    blank sound to make sure VLC et al can play 
-    it without getting chopped off.
+    Will automatically adjust some sensible variables
     """
 
     global REFRESH_PER_SEC_CORRECTION
+    global CORRECTED_REFRESH_PER_SEC
+    global STABILIZED_THRESHOLD
     global nb_overflowed
 
-    APPLIED_CHUNK_SIZE = int(RATE/(nbRefreshPerSecond-REFRESH_PER_SEC_CORRECTION))
+    CORRECTED_REFRESH_PER_SEC = nbRefreshPerSecond-REFRESH_PER_SEC_CORRECTION
+    APPLIED_CHUNK_SIZE = int(RATE/(CORRECTED_REFRESH_PER_SEC))
 
     asound.snd_lib_error_set_handler(c_error_handler)
     p = pyaudio.PyAudio()
@@ -229,25 +254,23 @@ def record():
         input=True, input_device_index=dev_index,
         frames_per_buffer=APPLIED_CHUNK_SIZE)
 
-    timeoutSilence = nbRefreshPerSecond*3
+    timeoutSilence = CORRECTED_REFRESH_PER_SEC*waitNSecondSilence
     frames = []
     num_silent = 0
     exceptionOnOverflow = True
     snd_started = False
-    r = array('h')
+    tickSinceLastThresholdRefresh = 0
 
-    driverI2C.display("Say something !")
     print()
-
     while 1:
         streamRead = False
         try:
             streamRead = stream.read(APPLIED_CHUNK_SIZE, exception_on_overflow = exceptionOnOverflow)
-        except OSError:
+        except OSError: # In case of nbRefreshPerSecond too high
             if(nb_overflowed == 0):
                 core.overecho("MicRead(InputOverflowed) : (CHUNK="+str(APPLIED_CHUNK_SIZE)+")", "ERROR")
                 core.echo([
-                    "The microphone buffer has exceeded specified CHUNK_SIZE due to high [nbRefreshSecond]", 
+                    "The microphone buffer has exceeded specified CHUNK_SIZE due to high [nbRefreshPerSecond]", 
                     "You should consider lowering it to avoid data loss. It will be automatically decreased",
                     "during execution until there is no more input overflow."
                 ], "WARN")
@@ -255,12 +278,13 @@ def record():
             else:
                 if(REFRESH_PER_SEC_CORRECTION < nbRefreshPerSecond-1):
                     REFRESH_PER_SEC_CORRECTION += 1
-                    APPLIED_CHUNK_SIZE = int(RATE/(nbRefreshPerSecond-REFRESH_PER_SEC_CORRECTION))
+                    CORRECTED_REFRESH_PER_SEC = nbRefreshPerSecond-REFRESH_PER_SEC_CORRECTION
+                    APPLIED_CHUNK_SIZE = int(RATE/CORRECTED_REFRESH_PER_SEC)
                     p.close(stream)
                     stream = p.open(format=FORMAT, channels=1, rate=RATE,
                         input=True, input_device_index=dev_index,
                         frames_per_buffer=APPLIED_CHUNK_SIZE)
-                    core.overecho("MicRead(InputOverflowed) : [nbRefreshPerSecond] have been automatically decreased to "+str(nbRefreshPerSecond - REFRESH_PER_SEC_CORRECTION)+" (CHUNK="+str(APPLIED_CHUNK_SIZE)+")", "WARN")
+                    core.overecho("MicRead(InputOverflowed) : [nbRefreshPerSecond] have been automatically decreased to "+str(CORRECTED_REFRESH_PER_SEC)+" (CHUNK="+str(APPLIED_CHUNK_SIZE)+")", "WARN")
                     print()
                 else:
                     core.overecho("[nbRefreshPerSecond] have been decreased by "+str(REFRESH_PER_SEC_CORRECTION)+" (CHUNK="+str(APPLIED_CHUNK_SIZE)+") and cannot be decreased further", "ERROR")
@@ -277,17 +301,30 @@ def record():
         snd_data = array('h', streamRead)
         if byteorder == 'big':
             snd_data.byteswap()
-        r.extend(snd_data)
 
-        silent = is_silent(snd_data)
-        soundBar = get_soundbar(snd_data)
+        silent = _is_silent(snd_data)
+        soundBar = _get_soundbar(snd_data)
+
 
         if(snd_started):
             recordingStatus = core.bcolors.OKGREEN + "RECORDING" + core.bcolors.OKCYAN
         else:
             recordingStatus = core.bcolors.FAIL + "NOT RECORDING" + core.bcolors.OKCYAN
+            if(auto_silence_threshold_stabilization):
+                if(tickSinceLastThresholdRefresh >= CORRECTED_REFRESH_PER_SEC):
+                    _stabilize_threshold(frames)
+                    tickSinceLastThresholdRefresh = 0
+                else:
+                    tickSinceLastThresholdRefresh += 1
+
         
-        core.overecho("Sound : ["+soundBar+"] ("+recordingStatus+")")
+        core.overecho(
+            "Sound : ["+soundBar+"] ("+recordingStatus+") "+
+            "C="+str(APPLIED_CHUNK_SIZE)+
+            ", R="+str(CORRECTED_REFRESH_PER_SEC)+
+            ", S=" + str(STABILIZED_THRESHOLD)+
+            ", L=" + str(max(snd_data))
+        )
 
         if snd_started:
             # Waiting for silence
@@ -306,21 +343,19 @@ def record():
             num_silent += 1
         
         if not silent and not snd_started:
-            driverI2C.setColor("green")
-            toggleListeningAnimation()
+            # RECORD START
+            if not(listening):
+                driverI2C.setColor("green")
             snd_started = True
         
         if snd_started and num_silent > timeoutSilence:
-            driverI2C.setColor("white")
-            toggleListeningAnimation()
-            core.overecho("Recording complete", "SUCCESS")
-            driverI2C.display("Please wait...")
+            # RECORD STOP
+            if not(listening):
+                driverI2C.setColor("white")
+            core.deletePrevLines()
             break
 
-    core.echo("Saving into file...")
     sample_width = p.get_sample_size(FORMAT)
-
-
     stream.stop_stream()
     stream.close()
     p.terminate()
@@ -328,12 +363,11 @@ def record():
     #r = normalize(r)
     #r = trim(r)
     #r = add_silence(r, 0.5)
-    core.overecho("Saving into file..." + core.done)
     return sample_width, frames
 
-def record_to_file(path):
+def _record_to_file(path, waitNSecondSilence=2):
     "Records from the microphone and outputs the resulting data to 'path'"
-    sample_width, frames = record()
+    sample_width, frames = _record(waitNSecondSilence=waitNSecondSilence)
     #data = pack('<' + ('h'*len(data)), *data)
 
     wf = wave.open(path, 'wb')
@@ -343,9 +377,27 @@ def record_to_file(path):
     wf.writeframes(b''.join(frames))
     wf.close()
 
-def listen(filepath='ressources/test1.wav'):
-    #if(core.fileExists(filepath)):
-    #    os.unlink(filepath)
+# @Desc Listens the microphone for sound and record it then saves it in the specified file and returns
+# @Params:
+#   - filepath (String): Path to the destination file of the audio (must be .wav)
+#   - waitTriggerWords (bool): If we wait for the user to say the triggerWords
+#   - triggerWords (String): The trigger words that will start a recording
+#   - from_lang (String): The language from which the user is speaking
+# @Return If the output file has been generated or not
+def listen(filepath='/home/jopro/raspberry-polytech/ressources/microphone_input.wav', waitTriggerWords=True, triggerWords="Listen", from_lang="en"):
+    if(core.fileExists(filepath)):
+        os.unlink(filepath)
 
-    record_to_file(filepath)
+    if(waitTriggerWords):
+        driverI2C.display("Say \"" + triggerWords + "\"")
+        while True:
+            _record_to_file(filepath, waitNSecondSilence=1)
+            trad = audio.speechToText(filepath, from_lang)
+            if(trad != False and trad.lower() == triggerWords.lower()):
+                break
+        
+    toggleListeningAnimation()
+    _record_to_file(filepath)
+    toggleListeningAnimation()
+    driverI2C.setColor("white")
     return core.fileExists(filepath)
