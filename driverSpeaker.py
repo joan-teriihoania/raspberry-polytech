@@ -8,7 +8,7 @@ import threading
 #   - blocking (bool): If we wait for the file to finish playing before returning
 #   - volume (int): Percentage of volume considering the max of the speakers (DEFAULT 200)
 # @Return Void
-def play(filepath, blocking=True, volume=200):
+def play(filepath, blocking=True, volume=100):
     factor = (volume/100)*32768
     cmd = 'sudo mpg123 -f '+str(factor)+' "' + filepath + '" >> /dev/null 2>&1'
     if(blocking):
