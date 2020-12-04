@@ -4,5 +4,11 @@
 		"title": "Accueil",
 		"css": [],
 		"js": []
+	},
+	"/profile": {
+		"filename": "profile.html",
+		"title": "Profil",
+		"css": [],
+		"js": []
 	}
 }
