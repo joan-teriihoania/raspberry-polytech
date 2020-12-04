@@ -56,10 +56,15 @@ waitTriggerWords = True
 #
 # @Return : if an error occured (to let main loop handle it)
 ############################
-def main(waitTriggerWords=True, from_lang='en', to_lang='fr'):
-    # TODO: Use "auto" language detection ? (???)
+def main(waitTriggerWords=True, from_lang='en', to_lang='it'):
+    # TODO: I'm sorry I did not understand MAX 3 FOIS
+    # TODO: fichier config avec langues préférées
     # TODO: System logs (JOAN)
+    # TODO: Menu langue
+    # TODO: Use "auto" language detection ? JOAN)
     # TODO: Store translations (deep.io) ? (ZAHRA)
+
+    # TODO: Ajouter diagramme de séquence
     
     # Default background color
     driverI2C.setColor('white')
@@ -120,6 +125,8 @@ def exec():
     global exitCodes
     global systemLanguage
     global triggerWords
+    nbFailedToUnderstand = 0
+    maxRetries = 2
     
     while True:
         try:
@@ -127,10 +134,15 @@ def exec():
             # Runs an error message and inform the user of it
             # Then, reloop
             if(main(waitTriggerWords=waitTriggerWords) == False):
-                driverI2C.setColor('red')
-                driverI2C.display('I did not\n understand')
-                audio.say("I am sorry, I did not understand.", systemLanguage)
-                waitTriggerWords = False
+                nbFailedToUnderstand += 1
+                if(nbFailedToUnderstand <= maxRetries):
+                    driverI2C.setColor('red')
+                    driverI2C.display('I did not\n understand')
+                    audio.say("I am sorry, I did not understand.", systemLanguage)
+                    waitTriggerWords = False
+                else:
+                    nbFailedToUnderstand = 0
+                    waitTriggerWords = True
                 continue
         except KeyboardInterrupt:
             # If the user interrupted the program using CTRL+C (example)
