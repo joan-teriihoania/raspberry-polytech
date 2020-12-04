@@ -9,15 +9,25 @@ const PORT = 3000
 */
 server.use(express.static('public'));
 
-fs.readFile("./router.json", function(err, data){
-    routes = JSON.parse(data)
+fs.readFile("./router.json", function(err, routerContent){
+    routes = JSON.parse(routerContent)
     for (const [path, content] of Object.entries(routes)) {
         server.get(path, function(req, res) {
-            fs.readFile("./views/" + content['filename'], function(err, data){
-                res.end(data)
+            fs.readFile("./views/" + content['filename'], function(err, viewContent){
+                var viewContent = viewContent.toString()
+                var elementsFolder = "./views/elements/"
+
+                fs.readdir(elementsFolder, (err, elementsFiles) => {
+                    for(elementFile of elementsFiles){
+                        elementContent = fs.readFileSync(elementsFolder + elementFile)
+                        viewContent = viewContent.replace('{{ '+elementFile+' }}', elementContent)
+                    }
+                    res.end(viewContent)
+                });
             })
         });
     }
 })
+
 
 server.listen(PORT)
