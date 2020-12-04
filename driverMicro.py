@@ -5,6 +5,7 @@ from ctypes import *
 import driverI2C
 import driverSpeaker
 import threading
+import translater
 
 import os
 import pyaudio
@@ -218,7 +219,7 @@ def _stabilize_threshold(frames):
             snd_min = snd_lvl
     
     if(snd_max == 0): return
-    targetThreshold = int(snd_max*2)
+    targetThreshold = min(max(int(snd_max*2), 200), 500)
     if((snd_max - snd_min) <= 100 and targetThreshold != STABILIZED_THRESHOLD):
         # Sound is stable and steady and considered silent
         soundBarMax = STABILIZED_THRESHOLD*3
@@ -310,12 +311,8 @@ def _record(waitNSecondSilence, auto_silence_threshold_stabilization=True):
             recordingStatus = core.bcolors.OKGREEN + "RECORDING" + core.bcolors.OKCYAN
         else:
             recordingStatus = core.bcolors.FAIL + "NOT RECORDING" + core.bcolors.OKCYAN
-            if(auto_silence_threshold_stabilization):
-                if(tickSinceLastThresholdRefresh >= CORRECTED_REFRESH_PER_SEC):
-                    _stabilize_threshold(frames)
-                    tickSinceLastThresholdRefresh = 0
-                else:
-                    tickSinceLastThresholdRefresh += 1
+        if(auto_silence_threshold_stabilization):
+            _stabilize_threshold(frames)
 
         
         core.overecho(
@@ -389,6 +386,7 @@ def listen(filepath='/home/jopro/raspberry-polytech/ressources/microphone_input.
         os.unlink(filepath)
 
     if(waitTriggerWords):
+        #triggerWords = translater.translate(triggerWords, to_lang=from_lang)
         driverI2C.display("Say \"" + triggerWords + "\"")
         while True:
             _record_to_file(filepath, waitNSecondSilence=1)
