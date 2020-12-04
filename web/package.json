@@ -1,0 +1,23 @@
+{
+  "name": "raspberry-polytech",
+  "version": "1.0.0",
+  "description": "Interface web de configuration JZ TRANSLATION",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joan-teriihoania/raspberry-polytech.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/joan-teriihoania/raspberry-polytech/issues"
+  },
+  "homepage": "https://github.com/joan-teriihoania/raspberry-polytech#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
