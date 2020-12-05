@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/joan-teriihoania/raspberry-polytech#readme",
   "dependencies": {
+    "cookie-parser": "^1.4.5",
+    "crypto": "^1.0.1",
     "express": "^4.17.1"
   }
 }
