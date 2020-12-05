@@ -1,14 +1,34 @@
 {
-	"/": {
-		"filename": "index.html",
-		"title": "Accueil",
-		"css": [],
-		"js": []
+	"views":{
+		"/": {
+			"filename": "index",
+			"title": "Tableau de bord",
+			"css": [],
+			"js": []
+		},
+		"/profile": {
+			"filename": "profile",
+			"title": "Votre profil",
+			"css": [],
+			"js": []
+		},
+		"/table": {
+			"filename": "table",
+			"title": "Tableaux",
+			"css": [],
+			"js": []
+		}
 	},
-	"/profile": {
-		"filename": "profile.html",
-		"title": "Profil",
-		"css": [],
-		"js": []
+	"api":{
+		"POST": {
+			"/login": {
+				"filename": "login.js"
+			}
+		},
+		"GET": {
+			"/logout": {
+				"filename": "logout.js"
+			}
+		}
 	}
 }
