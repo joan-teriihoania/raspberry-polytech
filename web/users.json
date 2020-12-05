@@ -1,0 +1,14 @@
+{
+	"arcadia@sama.com": {
+		"username": "Arcadia_sama",
+		"img_profile": "",
+		"password": "123",
+		"level": 5
+	},
+	"test@truc.com": {
+		"username": "Test",
+		"password": "cheh",
+		"img_profile": "avatar5.jpeg",
+		"level": 5
+	}
+}
