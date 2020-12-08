@@ -1,0 +1,24 @@
+#toast-container > .toast {
+  opacity: 1;
+}
+
+
+#toast-container > .toast-warning {
+  background-color: rgb(255, 166, 0);
+}
+
+#toast-container > .toast-success {
+  background-color: rgb(56, 206, 33);
+}
+
+#toast-container > .toast-info {
+  background-color: rgb(31, 177, 209);
+}
+
+#toast-container > .toast-error {
+  background-color: rgb(202, 13, 13);
+}
+
+.user-img_profile {
+  object-fit: cover;
+}

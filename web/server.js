@@ -5,10 +5,15 @@ const fm = require('./fileManager');
 var cookieParser = require('cookie-parser'); // module for parsing cookies
 const { nextTick } = require('process');
 const { encrypt, decrypt } = require('./crypto');
+const sqlite = require('sqlite3')
+const db = require('./db')
+const googleutils = require('./googleutils')
+const auth = require('./auth')
+const dotenv = require('dotenv');
+dotenv.config();
 
-const PORT = 3000
+var database = db.createDB()
 var routes = {}
-var users = {}
 var api_path_pref = "/api/v1"
 
 /*
@@ -21,36 +26,32 @@ server.use(express.json());       // to support JSON-encoded bodies
 server.use(express.urlencoded()); // to support URL-encoded bodies
 
 
-fs.readFile("./router.json", function(err, routerContent){
-    routes = JSON.parse(routerContent)
-    for (const [path, content] of Object.entries(routes['views'])) {
-        server.get(path, function(req, res) {
-            render_page(content, req, res)
-        });
-    }
 
-    for (const [path, content] of Object.entries(routes['api']['POST'])) {
-        server.post(api_path_pref + path, function(req, res) {
-            var temp = require("./api/" + content['filename'])
-            temp.exec(req, res)
-        });
-    }
-
-    for (const [path, content] of Object.entries(routes['api']['GET'])) {
-        server.get(api_path_pref + path, function(req, res) {
-            var temp = require("./api/" + content['filename'])
-            temp.exec(req, res)
-        });
-    }
-})
-
-fs.readFile("./users.json", function(err, routerContent){
-    users = JSON.parse(routerContent)
-})
-
+/* ROUTES */
 server.all('*', function(req, res, next){
-    update_auth(req, res)
-    next()
+    if (req.url != "" && req.url != "/" && req.url.endsWith('/')) {
+        res.redirect(req.url.substr(0, req.url.length - 1))
+        return
+    }
+    
+    update_auth(req, res).then(() => {
+        if(req.path.substr(0, api_path_pref.length) == api_path_pref){
+            api_info = routes['api'][req.method][req.path.replace(api_path_pref, '')]
+            if(api_info == undefined){
+                res.status(404)
+                res.end("Cannot link " + req.method + " "+req.url+" to any API script")
+                return
+            }
+
+            if(!res.user.is_auth && api_info.login){
+                res.status(401)
+                res.end("Echec d'authentification : Vous devez être connecté pour accéder à cette page ou faire cette action.")
+                return
+            }
+        }
+
+        next()
+    })
 })
 
 server.get('*', function(req, res, next){
@@ -61,14 +62,9 @@ server.get('*', function(req, res, next){
 
     var routeExist = false
     for (const [path, content] of Object.entries(routes['views'])) {
-        if(path == req.path){
+        if(path == req.path || "/ajax" + path == req.path){
             routeExist = true
         }
-    }
-
-    if(!res.user.is_auth){
-        render_page({"filename": "login", "title": "Connexion"}, req, res)
-        return
     }
 
     if(!routeExist){
@@ -77,78 +73,207 @@ server.get('*', function(req, res, next){
         return
     }
 
+    if(!res.user.is_auth && routes['views'][req.path]['login']){
+        res.status(401)
+        render_page({"filename": "login", "title": "Connexion"}, req, res)
+        return
+    }
+
+    if(res.user.is_auth){ console.log("[MONITOR] ("+res.user.username+"@"+res.user.user_id+") >> " + req.path) }
     next()
 })
 
-server.listen(PORT)
+server.listen(process.env.PORT, function(){
+    console.log("[EXPRESS] Server listening on port " + process.env.PORT)
+    fs.readFile("./database_template.json", function(err, database_template){
+        database_template = JSON.parse(database_template.toString())
+        for (const [tablename, rows] of Object.entries(database_template)) {
+            console.log("[DB-CONFIG] Table " + tablename + " configured")
+            db.createTable(database, tablename, rows)
+        }
 
+        db.select(database, "SELECT * FROM users WHERE username = 'Arcadia_sama' OR username = 'joan.teriihoania' OR username = 'zahra.ahlal'", function(rows){
+            if(!rows){
+                db.insert(database, "users", [
+                    {
+                        "username": "Arcadia_sama",
+                        "password": "123",
+                        "email": "joprocorp@gmail.com",
+                        "level": 5,
+                        "img_profile": "",
+                        "auth_google": true
+                    },
+                    {
+                        "username": "joan.teriihoania",
+                        "password": "raspberry",
+                        "email": "joan.teriihoania@etu.umontpellier.fr",
+                        "level": 5,
+                        "img_profile": "",
+                        "auth_google": false
+                    },
+                    {
+                        "username": "zahra.ahlal",
+                        "password": "raspberry",
+                        "email": "zahra.ahlal@etu.umontpellier.fr",
+                        "level": 5,
+                        "img_profile": "",
+                        "auth_google": false
+                    }
+                ])
+            }
+        })
+    })
+})
+
+
+
+
+// LOADING ROUTING PATH
+
+
+fs.readFile("./router.json", function(err, routerContent){
+    routes = JSON.parse(routerContent)
+
+    for (const [path, content] of Object.entries(routes['views'])) {
+        console.log("[ROUTER] View '" + content['filename'] + "' linked to '" + path + "' and '/ajax" + path + "'")
+        server.get(path, function(req, res) {
+            render_page(content, req, res)
+        });
+        
+        server.get("/ajax" + path, function(req, res) {
+            render_page(content, req, res, false)
+        });
+    }
+
+    for (const [path, content] of Object.entries(routes['api']['POST'])) {
+        console.log("[ROUTER] API '" + content['filename'] + "' linked to <POST> '" + api_path_pref + path + "'")
+        server.post(api_path_pref + path, function(req, res) {
+            var temp = require("./api/" + content['filename'])
+            temp.exec(req, res)
+        });
+    }
+
+    for (const [path, content] of Object.entries(routes['api']['GET'])) {
+        console.log("[ROUTER] API '" + content['filename'] + "' linked to <GET> '" + api_path_pref + path + "'")
+        server.get(api_path_pref + path, function(req, res) {
+            var temp = require("./api/" + content['filename'])
+            temp.exec(req, res)
+        });
+    }
+})
 
 
 // FUNCTIONS
 
 function update_auth(req, res){
-    res.user = {
-        username: "",
-        img_profile: "",
-        level: 0,
-        is_auth: false
-    }
+    return new Promise(function(resolve, reject){
+        var auth_ = req.cookies["JZ-Translation-auth"]
+        if (!auth_ || auth_ == "undefined"){
+            var auth_ = encrypt("{}")
+            res.cookie("JZ-Translation-auth", auth_)
+        }
 
-    var auth0 = req.cookies["JZ-Translation-auth0"]
-    var auth1 = req.cookies["JZ-Translation-auth1"]
-    if (!auth0 || !auth1){
-        res.cookie("JZ-Translation-auth0", encrypt(""))
-        res.cookie("JZ-Translation-auth1", encrypt(""))
-    } else {
-        username = decrypt(auth0)
-        password = decrypt(auth1)
-        for (const [r_username, r_user_data] of Object.entries(users)) {
-            if(username == r_username && r_user_data['password'] == password){
-                for (const [key, value] of Object.entries(r_user_data)) {
+        var user = JSON.parse(decrypt(auth_))
+        res.user = {
+            username: "",
+            img_profile: "none.png",
+            email: "",
+            level: 0,
+            is_auth: false
+        }
+        
+        auth.is_auth(database, user, function(is_auth, info){
+            res.user.is_auth = is_auth
+            if(is_auth){
+                for (const [key, value] of Object.entries(info)) {
                     if(key != "password"){
                         res.user[key] = value
                     }
                 }
-                res.user.is_auth = true
+                
+                if(res.user.img_profile == ""){
+                    res.user.img_profile = "none.png"
+                }
             }
-        }
-    }
+
+            resolve()
+        })
+    })
 }
 
-function render_page(view, req, res){
+function render_page(view, req, res, use_framework=true){
     fs.readFile("./views/framework.html", function(err, framework){
-        var framework = framework.toString()
-        framework = framework.replace('{{ page_title }}', view['title'])
+        if(use_framework){
+            framework = framework.toString()
+        } else {
+            framework = "{{ page }}"
+        }
         fs.readFile("./views/pages/" + view['filename'] + ".html", function(err, page){
             if(!err){
-                var pageController = require('./views/controllers/' + view['filename'])
-                var page = pageController.format(page.toString(), req, res)
-                var elementsFolder = "./views/elements/"
-                framework = framework.replace('{{ page }}', page)
+                fs.stat('./views/controllers/' + view['filename'] + ".js", function(err, stats){
+                    if(!err){
+                        var pageController = require('./views/controllers/' + view['filename'])
+                        page = pageController.format(page.toString(), req, res)
+                    }
 
-                fs.readdir(elementsFolder, (err, elementsFiles) => {
-                    fm.readFiles(elementsFiles.map(val => elementsFolder + val), function(dataElementFiles){
-                        for (const [filename, content] of Object.entries(dataElementFiles)) {
-                            if(filename.substring(filename.length - 2) == "js"){
-                                var elementController = require(filename)
-                                
-                                var filenameAlone = filename.split("/")
-                                filenameAlone = filenameAlone[filenameAlone.length-1]
-                                var keyword = filenameAlone.substring(0, filenameAlone.length - 3)
-
-                                framework = framework.replace(
-                                    '{{ '+keyword+' }}',
-                                    elementController.format(
-                                        dataElementFiles[filename.substring(0, filename.length - 2) + "html"]
-                                        , req, res
-                                    )
-                                )
+                    var elementsFolder = "./views/elements/"
+                    framework = replaceAll(framework, '{{ page }}', page)
+    
+                    fs.readdir(elementsFolder, (err, elementsFiles) => {
+                        fm.readFiles(elementsFiles.map(val => elementsFolder + val), function(dataElementFiles){
+                            let loadElements = []
+    
+                            for (const [filename, content] of Object.entries(dataElementFiles)) {
+                                if(filename.substring(filename.length - 2) == "js"){
+                                    var elementController = require(filename)
+                                    
+                                    var filenameAlone = filename.split("/")
+                                    filenameAlone = filenameAlone[filenameAlone.length-1]
+                                    loadElements.push(new Promise(function(resolve, reject){
+                                        var keyword = filenameAlone.substring(0, filenameAlone.length - 3)
+                                        elementController.format(dataElementFiles[filename.substring(0, filename.length - 2) + "html"], req, res, function(elementContentGene){
+                                            framework = replaceAll(framework, '{{ '+keyword+' }}', elementContentGene)
+                                            resolve()
+                                        })
+                                    }))
+                                }
                             }
-                        }
-                        res.send(framework)
-                    })
-                });
+                
+                            Promise.all(loadElements)
+                              .then(() => { // all done!
+                                for (const [key, value] of Object.entries(res.user)) {
+                                    framework = replaceAll(framework, '{{ data:user.'+key+' }}', res.user[key])
+                                }
+                                
+                                framework = replaceAll(framework, '{{ page_title }}', view['title'])
+                                framework = replaceAll(framework, '{{ google_auth_url }}', googleutils.getAuthURL())
+
+                                fs.readdir("./public/assets/js", (err, js_scripts) => {
+                                    js_scripts_embed = ""
+                                    for(js_script of js_scripts){
+                                        js_scripts_embed += '<script src="/assets/js/'+js_script+'"></script>\n'
+                                    }
+    
+                                    framework = replaceAll(framework, '{{ js_script }}', js_scripts_embed)
+                                    res.send(framework)
+                                })
+                              })
+                        })
+                    });
+                })
             }
         })
     })
+}
+
+function replaceAll(str,replaceWhat,replaceTo){
+    var re = new RegExp(replaceWhat, 'g');
+    return str.replace(re,replaceTo);
+}
+
+module.exports = {
+    database,
+    update_database: function(newdatabase){
+        database = newdatabase
+    }
 }

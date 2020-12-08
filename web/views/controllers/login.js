@@ -1,5 +1,12 @@
+const auth = require('../../auth');
+const { authentificate } = require('../../googleutils');
+
 module.exports = {
     format: function(content, req, res){
-        return content
+        if(res.user.is_auth){
+            res.redirect('/')
+        } else {
+            return content
+        }
     }
 }

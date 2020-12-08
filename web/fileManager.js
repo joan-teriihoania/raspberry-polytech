@@ -7,19 +7,27 @@ module.exports = {
             let filesContents = []
             const promises = files.map(file => { // get back an array of promises
               return new Promise(function(resolve, reject){
-                fs.readFile(file, function(err, data) {
-                  if(!err){
-                    filesContents[file] = data.toString()
-                    resolve()
+                fs.stat(file, function(err, stats){
+                  if(stats.isFile()){
+                    fs.readFile(file, function(err, data) {
+                      if(!err){
+                        filesContents[file] = data.toString()
+                        resolve()
+                      } else {
+                        reject(err)
+                      }
+                    })
                   } else {
-                    reject(err)
+                    resolve()
                   }
                 })
               })
             });
+            
             Promise.all(promises)
               .then(() => { // all done!
                 callback(filesContents)
+                resolve()
               })
               .catch((error) => {
                 reject(error)

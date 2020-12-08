@@ -4,30 +4,73 @@
 			"filename": "index",
 			"title": "Tableau de bord",
 			"css": [],
-			"js": []
+			"js": [],
+			"login": true
 		},
 		"/profile": {
 			"filename": "profile",
 			"title": "Votre profil",
 			"css": [],
-			"js": []
+			"js": [],
+			"login": true
 		},
 		"/table": {
 			"filename": "table",
 			"title": "Tableaux",
 			"css": [],
-			"js": []
+			"js": [],
+			"login": false
+		},
+		"/login": {
+			"filename": "login",
+			"title": "Connexion",
+			"css": [],
+			"js": [],
+			"login": false
+		},
+		"/login/google": {
+			"filename": "login",
+			"title": "Connexion Google",
+			"css": [],
+			"js": [],
+			"login": false
 		}
 	},
 	"api":{
 		"POST": {
-			"/login": {
-				"filename": "login.js"
+			"/profile": {
+				"filename": "edit_profile.js",
+				"login": true
+			},
+			"/ping": {
+				"filename": "ping.js",
+				"login": false
 			}
 		},
 		"GET": {
+			"/profile/notifications": {
+				"filename": "notifications.js",
+				"login": true
+			},
+			"/profile": {
+				"filename": "profile.js",
+				"login": true
+			},
+			"/login": {
+				"filename": "login.js",
+				"login": false
+			},
+			"/login/google": {
+				"filename": "login.js",
+				"login": false
+			},
 			"/logout": {
-				"filename": "logout.js"
+				"filename": "logout.js",
+				"login": false
+			},
+			"/ping": {
+				"filename": "ping.js",
+				"login": false
 			}
 		}
 	}

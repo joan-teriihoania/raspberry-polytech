@@ -1,10 +1,14 @@
 
-<h3 class="text-dark mb-4">Profile</h3>
+<h3 class="text-dark mb-4">{{ page_title }}</h3>
 <div class="row mb-3">
     <div class="col-lg-4">
         <div class="card mb-3">
-            <div class="card-body text-center shadow"><img class="rounded-circle mb-3 mt-4" src="/assets/img/dogs/image2.jpeg?h=a0a7d00bcd8e4f84f4d8ce636a8f94d4" width="160" height="160">
-                <div class="mb-3"><button class="btn btn-primary btn-sm" type="button">Change Photo</button></div>
+            <div class="card-body text-center shadow">
+                <img class="rounded-circle mb-3 mt-4 user-img_profile" src="/assets/img/avatars/{{ data:user.img_profile }}?h=a0a7d00bcd8e4f84f4d8ce636a8f94d4" width="160" height="160">
+                <div class="mb-3">
+                    <button class="btn btn-primary btn-sm" type="button" onclick="select_photo($('#img_profile_input'))">Changer de photo</button>
+                    <input id="img_profile_input" type="file" name="new_img_profile" style="display: none;" onchange="edit_profile({'img_profile': this})" />
+                </div>
             </div>
         </div>
         <div class="card shadow mb-4">
@@ -70,16 +74,21 @@
             <div class="col">
                 <div class="card shadow mb-3">
                     <div class="card-header py-3">
-                        <p class="text-primary m-0 font-weight-bold">User Settings</p>
+                        <p class="text-primary m-0 font-weight-bold">Paramètres utilisateur</p>
                     </div>
                     <div class="card-body">
-                        <form>
+                        <form id="edit-user-info-profile">
                             <div class="form-row">
                                 <div class="col">
-                                    <div class="form-group"><label for="username"><strong>Username</strong></label><input class="form-control" type="text" placeholder="user.name" name="username"></div>
+                                    <div class="form-group"><label for="username"><strong>Nom d'utilisateur</strong></label>
+                                        <input class="form-control edit-user-info-profile-data" type="text" name="username" value="{{ data:user.username }}" name="username">
+                                    </div>
                                 </div>
                                 <div class="col">
-                                    <div class="form-group"><label for="email"><strong>Email Address</strong></label><input class="form-control" type="email" placeholder="user@example.com" name="email"></div>
+                                    <div class="form-group"><label for="email"><strong>Adresse mail</strong></label>
+                                        <input class="form-control edit-user-info-profile-data" type="email" name="email" value="{{ data:user.email }}" name="email">
+                                    </div>
+                                    
                                 </div>
                             </div>
                             <div class="form-row">
@@ -90,7 +99,7 @@
                                     <div class="form-group"><label for="last_name"><strong>Last Name</strong></label><input class="form-control" type="text" placeholder="Doe" name="last_name"></div>
                                 </div>
                             </div>
-                            <div class="form-group"><button class="btn btn-primary btn-sm" type="submit">Save Settings</button></div>
+                            <div class="form-group"><button class="btn btn-primary btn-sm" id="edit-user-info-profile-submit" type="submit">Enregistrer</button></div>
                         </form>
                     </div>
                 </div>
