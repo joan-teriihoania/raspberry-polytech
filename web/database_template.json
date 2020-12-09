@@ -129,12 +129,6 @@
             "type": "BOOLEAN DEFAULT 0",
             "primary": false,
             "not_null": true
-        },
-        {
-            "name": "access_token",
-            "type": "TEXT",
-            "primary": false,
-            "not_null": false
         }
     ]
 }
