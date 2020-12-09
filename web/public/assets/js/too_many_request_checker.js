@@ -1,3 +1,6 @@
+var antiSpamWarned = false
+var antiSpamBanned = false
+
 var tooManyRequestsChecker = setInterval(function(){
     var client = new XMLHttpRequest();
     client.open("GET", "/api/v1/ping", true);
@@ -6,8 +9,8 @@ var tooManyRequestsChecker = setInterval(function(){
     client.onreadystatechange = function() {
       if(this.readyState == this.HEADERS_RECEIVED) {
         var contentType = client.getResponseHeader("JZ-Translation-antispam");
-        if (contentType == "WARN") {
-            stop_tooManyRequestsChecker()
+        var contentType = client.getResponseHeader("JZ-Translation-antispam");
+        if (!antiSpamWarned && contentType == "WARN") {
             Swal.fire({
                 icon: "warning",
                 title: "Anti-spam",
@@ -15,6 +18,17 @@ var tooManyRequestsChecker = setInterval(function(){
                 footer: '<div class="alert alert-warning" role="alert">Veillez à n\'ouvrir qu\'un nombre strictement nécessaire d\'onglets.</div>',
             })  
         }
+        
+        if (!antiSpamBanned && contentType == "BAN") {
+            stop_tooManyRequestsChecker()
+            Swal.fire({
+                icon: "error",
+                title: "Anti-spam",
+                text: "Vous avez envoyé trop de requête au serveur et votre adresse IP a été blacklistée. Envoyez un message aux administrateurs pour que votre adresse soit réautorisée.",
+                footer: '<div class="alert alert-warning" role="alert">Veillez à n\'ouvrir qu\'un nombre strictement nécessaire d\'onglets.</div>',
+            })  
+        }
+        
         client.abort();
       }
     }

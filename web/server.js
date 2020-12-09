@@ -44,6 +44,9 @@ setInterval(function(){
 /* ROUTES */
 server.all('*', function(req, res, next){
     res.ip = (req.headers['x-forwarded-for'] || '').split(',')[0] || req.connection.remoteAddress
+    if(warnedIps[res.ip]){res.setHeader('JZ-Translation-antispam', "WARN")}
+    if(bannedIps[res.ip]){res.setHeader('JZ-Translation-antispam', "BAN")}
+
     if(bannedIps[res.ip]){
         res.status(429)
         res.send('Your IP has been blacklisted')
@@ -68,8 +71,6 @@ server.all('*', function(req, res, next){
         res.send("Too many requests")
         return
     }
-
-    if(warnedIps[res.ip]){res.setHeader('JZ-Translation-antispam', "WARN")}
 
     if (req.url != "" && req.url != "/" && req.url.endsWith('/')) {
         res.redirect(req.url.substr(0, req.url.length - 1))
