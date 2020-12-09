@@ -1,3 +1,16 @@
+function findGetParameter(parameterName) {
+    var result = null,
+        tmp = [];
+    location.search
+        .substr(1)
+        .split("&")
+        .forEach(function (item) {
+          tmp = item.split("=");
+          if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+        });
+    return result;
+}
+
 function send_login_ajax(api_url){
     $("#login-form-submit").html('<i class="fas fa-circle-notch fa-spin"></i>')
     $("#login-form-submit").prop('disabled', true)
