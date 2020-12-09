@@ -14,8 +14,8 @@ var tooManyRequestsChecker = setInterval(function(){
             antiSpamWarned = true
             Swal.fire({
                 icon: "warning",
-                title: "<b>Anti-spam</b><br>Avertissement",
-                text: "Vous envoyez trop de requête au serveur. Votre adresse a été placée en liste d'avertissement, si vous en envoyez trop sur une trop longue durée, votre adresse IP sera blacklistée.",
+                title: "Anti-spam",
+                text: "<b>Avertissement</b><br>Vous envoyez trop de requête au serveur. Votre adresse a été placée en liste d'avertissement, si vous en envoyez trop sur une trop longue durée, votre adresse IP sera blacklistée.",
                 footer: '<div class="alert alert-warning" role="alert">Veillez à n\'ouvrir qu\'un nombre strictement nécessaire d\'onglets.</div>',
             })  
         }
@@ -25,8 +25,8 @@ var tooManyRequestsChecker = setInterval(function(){
             stop_tooManyRequestsChecker()
             Swal.fire({
                 icon: "error",
-                title: "<b>Anti-spam</b><br>IP blacklistée",
-                text: "Vous avez envoyé trop de requête au serveur et votre adresse IP a été blacklistée. Envoyez un message aux administrateurs pour que votre adresse soit réautorisée.",
+                title: "Anti-spam",
+                text: "<b>IP blacklistée</b><br>Vous avez envoyé trop de requête au serveur et votre adresse IP a été blacklistée. Envoyez un message aux administrateurs pour que votre adresse soit réautorisée.",
                 footer: '<div class="alert alert-warning" role="alert">Veillez à n\'ouvrir qu\'un nombre strictement nécessaire d\'onglets.</div>',
             })  
         }
