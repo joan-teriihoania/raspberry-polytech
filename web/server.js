@@ -35,7 +35,7 @@ setInterval(function(){
 
 setInterval(function(){
     warnedIps = {}
-}, 5000)
+}, 30000)
 
 setInterval(function(){
     bannedIps = {}
@@ -55,10 +55,12 @@ server.all('*', function(req, res, next){
 
     if(loggerRequest[res.ip] > process.env.MAX_REQUEST_PER_SECOND){
         if(warnedIps[res.ip]){
-            console.log("[ANTISPAM] <BAN> " + res.ip + " has been blacklisted until next cache clear or reboot")
-            bannedIps[res.ip] = new Date()
+            if(warnedIps[res.ip] > process.env.NB_WARNS_UNTIL_IP_BLACKLIST){
+                console.log("[ANTISPAM] <BAN> " + res.ip + " has been blacklisted")
+                bannedIps[res.ip] = new Date()
+            }
         } else {
-            warnedIps[res.ip] = true
+            warnedIps[res.ip] = 1
             console.log("[ANTISPAM] <WARN> Too many requests ("+loggerRequest[res.ip]+") from " + res.ip)
         }
         res.status(429)
