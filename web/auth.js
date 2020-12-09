@@ -17,7 +17,7 @@ module.exports = {
         if(user.access_token){
             googleutils.getUserInfo(user.access_token, function(userinfo){
                 if(userinfo){
-                    db.select(database, 'SELECT * FROM users WHERE auth_google = "true" AND email = "'+userinfo.data.email+'" AND access_token = "'+userinfo.access_token+'"', function(rows){
+                    db.select(database, 'SELECT * FROM users WHERE auth_google = "true" AND email = "'+userinfo.data.email+'"', function(rows){
                         if(rows && rows.length > 0){
                             callback(true, rows[0])
                         } else {
