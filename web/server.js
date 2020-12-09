@@ -55,6 +55,7 @@ server.all('*', function(req, res, next){
 
     if(loggerRequest[res.ip] > process.env.MAX_REQUEST_PER_SECOND){
         if(warnedIps[res.ip]){
+            warnedIps[res.ip] = warnedIps[res.ip] + 1
             if(warnedIps[res.ip] > process.env.NB_WARNS_UNTIL_IP_BLACKLIST){
                 console.log("[ANTISPAM] <BAN> " + res.ip + " has been blacklisted")
                 bannedIps[res.ip] = new Date()
