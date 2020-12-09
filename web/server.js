@@ -30,15 +30,16 @@ loggerRequest = {}
 
 setInterval(function(){
     loggerRequest = {}
-}, 100)
+}, 1000)
 
 /* ROUTES */
 server.all('*', function(req, res, next){
     res.ip = (req.headers['x-forwarded-for'] || '').split(',')[0] || req.connection.remoteAddress
-    if(loggerRequest[res.ip]){ loggerRequest[res.ip] = 0 }
-    loggerRequest[res.ip] += 1
+    if(!loggerRequest[res.ip] || isNaN(loggerRequest[res.ip])){ loggerRequest[res.ip] = 0 }
+    loggerRequest[res.ip] = loggerRequest[res.ip] + 1
 
     if(loggerRequest[res.ip] > process.env.MAX_REQUEST_PER_SECOND){
+        console.log("[WARN] Too many requests ("+loggerRequest[res.ip]+") from " + res.ip)
         res.status(429)
         return
     }
@@ -134,7 +135,7 @@ server.get('*', function(req, res, next){
         return
     }
 
-    if(res.user.is_auth){ console.log("[MONITOR] ("+res.user.username+"@"+res.user.user_id+"-"+res.ip+") >> " + req.path) }
+    // if(res.user.is_auth){ console.log("[MONITOR] ("+res.user.username+"@"+res.user.user_id+"-"+res.ip+") >> " + req.path) }
     next()
 })
 
