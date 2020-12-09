@@ -16,7 +16,7 @@ module.exports = {
                     console.log(err)
                     errors.push("Erreur (" + err.code + "-1) : Une erreur technique s'est produite.")
                 } else {
-                    db.run(database, "UPDATE users SET img_profile = '"+filename+"' WHERE user_id = " + res.user.user_id)
+                    db.run(database, "UPDATE users SET img_profile = '/assets/img/avatars/"+filename+"' WHERE user_id = " + res.user.user_id)
                     response["img_profile"] = "/assets/img/avatars/" + filename;
                 }
                 callback()

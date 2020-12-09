@@ -4,7 +4,7 @@
     <div class="col-lg-4">
         <div class="card mb-3">
             <div class="card-body text-center shadow">
-                <img class="rounded-circle mb-3 mt-4 user-img_profile" src="/assets/img/avatars/{{ data:user.img_profile }}?h=a0a7d00bcd8e4f84f4d8ce636a8f94d4" width="160" height="160">
+                <img class="rounded-circle mb-3 mt-4 user-img_profile" src="{{ data:user.img_profile }}" width="160" height="160">
                 <div class="mb-3">
                     <button class="btn btn-primary btn-sm" type="button" onclick="select_photo($('#img_profile_input'))">Changer de photo</button>
                     <input id="img_profile_input" type="file" name="new_img_profile" style="display: none;" onchange="edit_profile({'img_profile': this})" />
@@ -87,6 +87,7 @@
                                 <div class="col">
                                     <div class="form-group"><label for="email"><strong>Adresse mail</strong></label>
                                         <input class="form-control edit-user-info-profile-data" type="email" name="email" value="{{ data:user.email }}" name="email">
+                                        <small class="text-danger mb-0">Si vous vous connectez via Google, vous devrez vous reconnecter avec votre nouvelle adresse.</small>
                                     </div>
                                     
                                 </div>

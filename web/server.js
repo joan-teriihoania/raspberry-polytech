@@ -176,7 +176,7 @@ function update_auth(req, res){
         var user = JSON.parse(decrypt(auth_))
         res.user = {
             username: "",
-            img_profile: "none.png",
+            img_profile: "/assets/img/avatars/none.png",
             email: "",
             level: 0,
             is_auth: false
@@ -192,7 +192,7 @@ function update_auth(req, res){
                 }
                 
                 if(res.user.img_profile == ""){
-                    res.user.img_profile = "none.png"
+                    res.user.img_profile = "/assets/img/avatars/none.png"
                 }
             }
 
@@ -214,6 +214,9 @@ function render_page(view, req, res, use_framework=true){
                     if(!err){
                         var pageController = require('./views/controllers/' + view['filename'])
                         page = pageController.format(page.toString(), req, res)
+                        if(page == false){
+                            return
+                        }
                     }
 
                     var elementsFolder = "./views/elements/"

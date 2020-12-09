@@ -7,7 +7,7 @@
 			"js": [],
 			"login": true
 		},
-		"/profile": {
+		"/account": {
 			"filename": "profile",
 			"title": "Votre profil",
 			"css": [],
@@ -38,7 +38,7 @@
 	},
 	"api":{
 		"POST": {
-			"/profile": {
+			"/account": {
 				"filename": "edit_profile.js",
 				"login": true
 			},
@@ -48,11 +48,11 @@
 			}
 		},
 		"GET": {
-			"/profile/notifications": {
+			"/account/notifications": {
 				"filename": "notifications.js",
 				"login": true
 			},
-			"/profile": {
+			"/account": {
 				"filename": "profile.js",
 				"login": true
 			},

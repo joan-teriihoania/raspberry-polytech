@@ -49,7 +49,7 @@ function send_ajax_edit_profile(fd, showSweet=false, callback){
     }
 
     $.ajax({
-        url: '/api/v1/profile',
+        url: '/api/v1/account',
         type: 'post',
         data: fd,
         contentType: false,

@@ -15,10 +15,10 @@ module.exports = {
         }
 
         if(user.access_token){
-            googleutils.authentificate(user.code, function(userinfo){
+            googleutils.getUserInfo(user.access_token, function(userinfo){
                 if(userinfo){
-                    db.select(database, 'SELECT * FROM users WHERE auth_google = "true" AND email = "'+userinfo.email+'" AND access_token = "'+user.id_token+'"', function(rows){
-                        if(rows && rows.length > 0 && userinfo.user_id == rows[0].user_id){
+                    db.select(database, 'SELECT * FROM users WHERE auth_google = "true" AND email = "'+userinfo.data.email+'" AND access_token = "'+userinfo.access_token+'"', function(rows){
+                        if(rows && rows.length > 0){
                             callback(true, rows[0])
                         } else {
                             callback(false, undefined)

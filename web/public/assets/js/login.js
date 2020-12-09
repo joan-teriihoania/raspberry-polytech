@@ -9,7 +9,11 @@ function send_login_ajax(api_url){
         },
         statusCode: {
             200: function(response) {
-                Swal.fire("Connecté en tant que <br>" + response.username, `Vous serez redirigé dans quelques instants...`, "success")
+                Swal.fire({
+                    title:"Connecté en tant que <br>" + response.username,
+                    icon:"success",
+                    text: "Vous serez redirigé dans quelques instants...",
+                })
                 Swal.showLoading()
                 setTimeout(function(){
                     location.reload()

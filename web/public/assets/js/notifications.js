@@ -15,7 +15,7 @@ var notificationsLoaded = false
 setInterval(function(){
     if($('#notifications-list')){
         $.ajax({
-            url: "/api/v1/profile/notifications",
+            url: "/api/v1/account/notifications",
             statusCode: {
                 200: function(response) {
                     $('#notifications-connection-lost').hide()

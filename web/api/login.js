@@ -30,14 +30,19 @@ module.exports = {
                     if(userinfo){
                         db.select(database, 'SELECT * FROM users WHERE auth_google = "true" AND email = "'+userinfo.data.email+'"', function(rows){
                             if(rows && rows.length > 0){
-                                res.cookie("JZ-Translation-auth", encrypt(JSON.stringify({
-                                    "email": email,
-                                    "password": password,
-                                    "user_id": rows[0].user_id
-                                })))
+                                db.run(database, 'UPDATE users SET access_token = "'+userinfo.access_token+'" WHERE user_id = ' + rows[0].user_id)
+                                if(rows[0].img_profile == ""){
+                                    db.run(database, 'UPDATE users SET img_profile = "'+userinfo.data.picture+'" WHERE user_id = ' + rows[0].user_id)
+                                }
 
-                                res.status(200)
-                                res.send(rows[0])
+                                db.select(database, 'SELECT * FROM users WHERE auth_google = "true" AND email = "'+userinfo.data.email+'"', function(rows){
+                                    res.cookie("JZ-Translation-auth", encrypt(JSON.stringify({
+                                        "access_token": userinfo.access_token
+                                    })))
+
+                                    res.status(200)
+                                    res.send(rows[0])
+                                })
                             } else {
                                 res.status(401)
                                 res.send("Identifiants incorrectes")

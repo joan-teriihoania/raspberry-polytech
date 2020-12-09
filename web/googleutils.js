@@ -16,6 +16,21 @@ function getAuthURL(){
     return `https://accounts.google.com/o/oauth2/v2/auth?${stringifiedParams}`;
 }
 
+function getUserInfo(access_token, callback){
+    axios({
+        url: 'https://www.googleapis.com/oauth2/v2/userinfo',
+        method: 'get',
+        headers: {
+            Authorization: `Bearer ${access_token}`,
+        },
+    }).then(function(userinfo){
+        userinfo.access_token = access_token
+        callback(userinfo)
+    }).catch((err) => {
+        callback(undefined)
+    });
+}
+
 function authentificate(code, callback){
     axios({
         url: `https://oauth2.googleapis.com/token`,
@@ -28,17 +43,13 @@ function authentificate(code, callback){
           code,
         },
       }).then(function(response){
-        axios({
-            url: 'https://www.googleapis.com/oauth2/v2/userinfo',
-            method: 'get',
-            headers: {
-                Authorization: `Bearer ${response.data.access_token}`,
-            },
-        }).then(function(userinfo){
-            callback(userinfo)
-        }).catch((err) => {
-            callback(undefined)
-        });
+          getUserInfo(response.data.access_token, function(userinfo){
+              if(userinfo){
+                callback(userinfo)
+              } else {
+                  callback(undefined)
+              }
+          })
       }).catch((err) => {
           callback(undefined)
       });
@@ -47,5 +58,6 @@ function authentificate(code, callback){
 
 module.exports = {
     authentificate,
-    getAuthURL
+    getAuthURL,
+    getUserInfo
 }
