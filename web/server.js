@@ -39,7 +39,7 @@ setInterval(function(){
 
 setInterval(function(){
     bannedIps = {}
-}, 1*60*60) // hour
+}, 1*60*60*1000) // hour
 
 /* ROUTES */
 server.all('*', function(req, res, next){
