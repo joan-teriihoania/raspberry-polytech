@@ -46,6 +46,7 @@ server.all('*', function(req, res, next){
     res.ip = (req.headers['x-forwarded-for'] || '').split(',')[0] || req.connection.remoteAddress
     if(bannedIps[res.ip]){
         res.status(429)
+        res.send('Your IP has been blacklisted')
         return
     }
 
@@ -61,6 +62,7 @@ server.all('*', function(req, res, next){
             console.log("[ANTISPAM] <WARN> Too many requests ("+loggerRequest[res.ip]+") from " + res.ip)
         }
         res.status(429)
+        res.send("Too many requests")
         return
     }
 
