@@ -26,9 +26,23 @@ server.use(express.json());       // to support JSON-encoded bodies
 server.use(express.urlencoded()); // to support URL-encoded bodies
 
 
+loggerRequest = {}
+
+setInterval(function(){
+    loggerRequest = {}
+}, 100)
 
 /* ROUTES */
 server.all('*', function(req, res, next){
+    res.ip = (req.headers['x-forwarded-for'] || '').split(',')[0] || req.connection.remoteAddress
+    if(loggerRequest[res.ip]){ loggerRequest[res.ip] = 0 }
+    loggerRequest[res.ip] += 1
+
+    if(loggerRequest[res.ip] > process.env.MAX_REQUEST_PER_SECOND){
+        res.status(429)
+        return
+    }
+
     if (req.url != "" && req.url != "/" && req.url.endsWith('/')) {
         res.redirect(req.url.substr(0, req.url.length - 1))
         return
@@ -120,8 +134,7 @@ server.get('*', function(req, res, next){
         return
     }
 
-    var ip = (req.headers['x-forwarded-for'] || '').split(',')[0] || req.connection.remoteAddress
-    if(res.user.is_auth){ console.log("[MONITOR] ("+res.user.username+"@"+res.user.user_id+"-"+ip+") >> " + req.path) }
+    if(res.user.is_auth){ console.log("[MONITOR] ("+res.user.username+"@"+res.user.user_id+"-"+res.ip+") >> " + req.path) }
     next()
 })
 
