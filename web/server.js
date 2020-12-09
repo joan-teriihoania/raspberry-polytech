@@ -38,9 +38,32 @@ server.all('*', function(req, res, next){
         if(req.path.substr(0, api_path_pref.length) == api_path_pref){
             api_info = routes['api'][req.method][req.path.replace(api_path_pref, '')]
             if(api_info == undefined){
-                res.status(404)
-                res.end("Cannot link " + req.method + " "+req.url+" to any API script")
-                return
+                var req_path = req.path.split('/')
+
+                for(const [path, content] of Object.entries(routes['api'][req.method])){
+                    var api_path = (api_path_pref + path).split('/')
+                    if(req_path.length == api_path.length){
+                        var loaded_api_path = []
+                        var loaded_req_path = []
+
+                        for(var i = 0; i < api_path.length; i++){
+                            if(!api_path[i].startsWith(':')){
+                                loaded_api_path.push(api_path[i])
+                                loaded_req_path.push(req_path[i])
+                            }
+                        }
+
+                        if(loaded_api_path.join('/') == loaded_req_path.join('/')){
+                            api_info = routes['api'][req.method][path]
+                        }
+                    }
+                }
+
+                if(api_info == undefined){
+                    res.status(404)
+                    res.end("Cannot link " + req.method + " "+req.url+" to any API script")
+                    return
+                }
             }
 
             if(!res.user.is_auth && api_info.login){
@@ -60,26 +83,44 @@ server.get('*', function(req, res, next){
         return
     }
 
-    var routeExist = false
+    var view_info = undefined
+    var req_path = req.path.split('/')
     for (const [path, content] of Object.entries(routes['views'])) {
         if(path == req.path || "/ajax" + path == req.path){
-            routeExist = true
+            view_info = routes['views'][path]
+        }
+        
+        var view_path = (path).split('/')
+        if(req_path.length == view_path.length){
+            var loaded_view_path = []
+            var loaded_req_path = []
+
+            for(var i = 0; i < view_path.length; i++){
+                if(!view_path[i].startsWith(':')){
+                    loaded_view_path.push(view_path[i])
+                    loaded_req_path.push(req_path[i])
+                }
+            }
+
+            if(loaded_view_path.join('/') == loaded_req_path.join('/')){
+                view_info = routes['views'][path]
+            }
         }
     }
 
-    if(!routeExist){
+    if(!view_info){
         res.status(404)
         render_page({"filename": "404", "title": "Page introuvable"}, req, res)
         return
     }
 
-    if(!res.user.is_auth && routes['views'][req.path]['login']){
+    if(!res.user.is_auth && view_info['login']){
         res.status(401)
         render_page({"filename": "login", "title": "Connexion"}, req, res)
         return
     }
 
-    if(res.user.is_auth){ console.log("[MONITOR] ("+res.user.username+"@"+res.user.user_id+") >> " + req.path) }
+    if(res.user.is_auth){ console.log("[MONITOR] ("+res.user.username+"@"+res.user.user_id+"-"+req.connection.remoteAddress+") >> " + req.path) }
     next()
 })
 
