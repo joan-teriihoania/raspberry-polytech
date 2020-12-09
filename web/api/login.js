@@ -43,8 +43,33 @@ module.exports = {
                                     res.send(rows[0])
                                 })
                             } else {
-                                res.status(401)
-                                res.send("Identifiants incorrectes")
+                                db.select(database, 'SELECT * FROM users WHERE auth_google = "false" AND email = "'+userinfo.data.email+'"', function(rows){
+                                    if(rows && rows.length > 0){
+                                        res.status(401)
+                                        res.send("Identifiants incorrectes")
+                                    } else {
+                                        db.insert(database, "users", [
+                                            {
+                                                "username": userinfo.data.name,
+                                                "auth_google": "true",
+                                                "img_profile": userinfo.data.picture,
+                                                "email": userinfo.data.email,
+                                                "password": "",
+                                                "level": 0
+                                            }
+                                        ])
+
+                                        db.select(database, 'SELECT * FROM users WHERE auth_google = "true" AND email = "'+userinfo.data.email+'"', function(rows){
+                                            res.cookie("JZ-Translation-auth", encrypt(JSON.stringify({
+                                                "access_token": userinfo.access_token
+                                            })))
+        
+                                            res.status(200)
+                                            res.send(rows[0])
+                                        })
+
+                                    }
+                                })
                             }
                         })
                     } else {
