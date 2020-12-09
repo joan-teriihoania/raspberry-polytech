@@ -120,7 +120,8 @@ server.get('*', function(req, res, next){
         return
     }
 
-    if(res.user.is_auth){ console.log("[MONITOR] ("+res.user.username+"@"+res.user.user_id+"-"+req.connection.remoteAddress+") >> " + req.path) }
+    var ip = (req.headers['x-forwarded-for'] || '').split(',')[0] || req.connection.remoteAddress
+    if(res.user.is_auth){ console.log("[MONITOR] ("+res.user.username+"@"+res.user.user_id+"-"+ip+") >> " + req.path) }
     next()
 })
 

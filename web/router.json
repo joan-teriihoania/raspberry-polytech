@@ -48,12 +48,28 @@
 			}
 		},
 		"GET": {
+			"/device/:device_id/*": {
+				"filename": "device.js",
+				"login": false
+			},
+			"/device/:device_id/translate": {
+				"filename": "device_translate.js",
+				"login": false
+			},
+			"/device/:device_id/auth": {
+				"filename": "device_auth.js",
+				"login": false
+			},
 			"/account/notifications": {
 				"filename": "notifications.js",
 				"login": true
 			},
 			"/account": {
 				"filename": "profile.js",
+				"login": true
+			},
+			"/account/bind/google": {
+				"filename": "auth_google.js",
 				"login": true
 			},
 			"/login": {
