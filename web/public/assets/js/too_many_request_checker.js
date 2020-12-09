@@ -11,6 +11,7 @@ var tooManyRequestsChecker = setInterval(function(){
         var contentType = client.getResponseHeader("JZ-Translation-antispam");
         var contentType = client.getResponseHeader("JZ-Translation-antispam");
         if (!antiSpamWarned && contentType == "WARN") {
+            antiSpamWarned = true
             Swal.fire({
                 icon: "warning",
                 title: "Anti-spam",
@@ -20,6 +21,7 @@ var tooManyRequestsChecker = setInterval(function(){
         }
         
         if (!antiSpamBanned && contentType == "BAN") {
+            antiSpamBanned = true
             stop_tooManyRequestsChecker()
             Swal.fire({
                 icon: "error",
