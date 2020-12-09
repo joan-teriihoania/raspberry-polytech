@@ -25,21 +25,41 @@ server.use(express.static('public'));
 server.use(express.json());       // to support JSON-encoded bodies
 server.use(express.urlencoded()); // to support URL-encoded bodies
 
-
+bannedIps = {}
+warnedIps = {}
 loggerRequest = {}
 
 setInterval(function(){
     loggerRequest = {}
 }, 1000)
 
+setInterval(function(){
+    warnedIps = {}
+}, 5000)
+
+setInterval(function(){
+    bannedIps = {}
+}, 1*60*60) // hour
+
 /* ROUTES */
 server.all('*', function(req, res, next){
     res.ip = (req.headers['x-forwarded-for'] || '').split(',')[0] || req.connection.remoteAddress
+    if(bannedIps[res.ip]){
+        res.status(429)
+        return
+    }
+
     if(!loggerRequest[res.ip] || isNaN(loggerRequest[res.ip])){ loggerRequest[res.ip] = 0 }
     loggerRequest[res.ip] = loggerRequest[res.ip] + 1
 
     if(loggerRequest[res.ip] > process.env.MAX_REQUEST_PER_SECOND){
-        console.log("[WARN] Too many requests ("+loggerRequest[res.ip]+") from " + res.ip)
+        if(warnedIps[res.ip]){
+            console.log("[ANTISPAM] <BAN> " + res.ip + " has been blacklisted until next cache clear or reboot")
+            bannedIps[res.ip] = new Date()
+        } else {
+            warnedIps[res.ip] = true
+            console.log("[ANTISPAM] <WARN> Too many requests ("+loggerRequest[res.ip]+") from " + res.ip)
+        }
         res.status(429)
         return
     }
