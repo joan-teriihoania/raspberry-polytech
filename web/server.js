@@ -69,6 +69,8 @@ server.all('*', function(req, res, next){
         return
     }
 
+    if(warnedIps[res.ip]){res.setHeader('JZ-Translation-antispam', "WARN")}
+
     if (req.url != "" && req.url != "/" && req.url.endsWith('/')) {
         res.redirect(req.url.substr(0, req.url.length - 1))
         return
