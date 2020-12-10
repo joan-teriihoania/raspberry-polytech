@@ -40,21 +40,42 @@ module.exports = {
         var templateRows = {
             "rowName": "rowContent"
         }
-        for(var row of rows){
-            var cols = []
-            var values = []
-            
-            for (const [col, value] of Object.entries(row)) {
-                cols.push(col)
-                if(Number.isInteger(value)){
-                    values.push(value)
-                } else {
-                    values.push('"' + value + '"')
+        
+        return new Promise(function(resolve, reject){
+            var promises = []
+            for(var row of rows){
+                var cols = []
+                var values = []
+                
+                for (const [col, value] of Object.entries(row)) {
+                    cols.push(col)
+                    if(Number.isInteger(value)){
+                        values.push(value)
+                    } else {
+                        values.push('"' + value + '"')
+                    }
                 }
+                
+                promises.push(
+                    new Promise(function(resolve, reject){
+                        db.run("INSERT INTO " + tablename + "("+cols.join(', ')+") VALUES ("+values.join(", ")+")", function(err){
+                            if(err){
+                                reject()
+                            } else {
+                                resolve()
+                            }
+                        })
+                    })
+                )
             }
-    
-            db.run("INSERT INTO " + tablename + "("+cols.join(', ')+") VALUES ("+values.join(", ")+")")
-        }
+
+            Promise.all(promises).then(() => {
+                resolve()
+            }).catch(() => {
+                reject()
+            })
+            
+        })
     },
     run: function(db, request){
         return new Promise(function(resolve, reject){

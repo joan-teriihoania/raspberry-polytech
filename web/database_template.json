@@ -96,7 +96,7 @@
         },
         {
             "name": "username",
-            "type": "TEXT UNIQUE",
+            "type": "TEXT",
             "primary": false,
             "not_null": true
         },

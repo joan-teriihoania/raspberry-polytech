@@ -74,18 +74,21 @@ module.exports = {
                                                 "password": "",
                                                 "level": 0
                                             }
-                                        ]) 
-
-                                        db.select(database, 'SELECT * FROM users WHERE auth_google = "true" AND email = "'+userinfo.data.email+'"', function(rows){
-                                            res.cookie("JZ-Translation-auth", encrypt(JSON.stringify({
-                                                "access_token": userinfo.access_token
-                                            })))
-        
-                                            res.status(200)
-                                            res.send(rows[0])
+                                        ]).then(() => {
+                                            db.select(database, 'SELECT * FROM users WHERE auth_google = "true" AND email = "'+userinfo.data.email+'"', function(rows){
+                                                res.cookie("JZ-Translation-auth", encrypt(JSON.stringify({
+                                                    "access_token": userinfo.access_token
+                                                })))
+            
+                                                res.status(200)
+                                                res.send(rows[0])
+                                                return
+                                            })
+                                        }).catch(() => {
+                                            res.status(500)
+                                            res.send("Un compte ayant la même adresse mail que votre compte Google existe mais n'y est pas lié.")
                                             return
                                         })
-
                                     }
                                 })
                             }
