@@ -57,20 +57,24 @@ server.all('*', function(req, res, next){
 
                 for(const [path, content] of Object.entries(routes['api'][req.method])){
                     var api_path = (api_path_pref + path).split('/')
-                    if(req_path.length == api_path.length){
-                        var loaded_api_path = []
-                        var loaded_req_path = []
-
-                        for(var i = 0; i < api_path.length; i++){
-                            if(!api_path[i].startsWith(':')){
-                                loaded_api_path.push(api_path[i])
-                                loaded_req_path.push(req_path[i])
-                            }
+                    var loaded_api_path = []
+                    var loaded_req_path = []
+                    for(var i = 0; i < api_path.length; i++){
+                        if(api_path[i] == "*"){
+                            break
                         }
 
-                        if(loaded_api_path.join('/') == loaded_req_path.join('/')){
-                            api_info = routes['api'][req.method][path]
+                        if(!api_path[i].startsWith(':')){
+                            loaded_api_path.push(api_path[i])
+                            loaded_req_path.push(req_path[i])
+                        } else {
+                            loaded_api_path.push(req_path[i])
+                            loaded_req_path.push(req_path[i])
                         }
+                    }
+
+                    if(loaded_api_path.join('/') == loaded_req_path.join('/')){
+                        api_info = routes['api'][req.method][path]
                     }
                 }
 
@@ -114,6 +118,9 @@ server.get('*', function(req, res, next){
                 if(!view_path[i].startsWith(':')){
                     loaded_view_path.push(view_path[i])
                     loaded_req_path.push(req_path[i])
+                } else {
+                    loaded_api_path.push(req_path[i])
+                    loaded_req_path.push(req_path[i])
                 }
             }
 
@@ -148,36 +155,48 @@ server.listen(process.env.PORT, function(){
             db.createTable(database, tablename, rows)
         }
 
-        db.select(database, "SELECT * FROM users WHERE username = 'Arcadia_sama' OR username = 'joan.teriihoania' OR username = 'zahra.ahlal'", function(rows){
-            if(!rows){
-                db.insert(database, "users", [
-                    {
-                        "username": "Arcadia_sama",
-                        "password": "123",
-                        "email": "joprocorp@gmail.com",
-                        "level": 5,
-                        "img_profile": "",
-                        "auth_google": true
-                    },
-                    {
-                        "username": "joan.teriihoania",
-                        "password": "raspberry",
-                        "email": "joan.teriihoania@etu.umontpellier.fr",
-                        "level": 5,
-                        "img_profile": "",
-                        "auth_google": false
-                    },
-                    {
-                        "username": "zahra.ahlal",
-                        "password": "raspberry",
-                        "email": "zahra.ahlal@etu.umontpellier.fr",
-                        "level": 5,
-                        "img_profile": "",
-                        "auth_google": false
-                    }
-                ])
-            }
-        })
+        // Adding timeout to let createTable time to load the new tables
+        /*setTimeout(function(){
+            console.log("[DB-CONFIG] Adding default users values")
+            db.select(database, "SELECT * FROM users WHERE username = 'Arcadia_sama' OR username = 'joan.teriihoania' OR username = 'zahra.ahlal'", function(rows){
+                if(!rows || rows.length == 0){
+                    db.insert(database, "users", [
+                        {
+                            "username": "Arcadia_sama",
+                            "password": "123",
+                            "email": "joprocorp@gmail.com",
+                            "level": 5,
+                            "img_profile": "",
+                            "auth_google": true
+                        },
+                        {
+                            "username": "Joan",
+                            "password": "123",
+                            "email": "teriihoaniaheimanu@gmail.com",
+                            "level": 5,
+                            "img_profile": "",
+                            "auth_google": false
+                        },
+                        {
+                            "username": "joan.teriihoania",
+                            "password": "raspberry",
+                            "email": "joan.teriihoania@etu.umontpellier.fr",
+                            "level": 5,
+                            "img_profile": "",
+                            "auth_google": false
+                        },
+                        {
+                            "username": "zahra.ahlal",
+                            "password": "raspberry",
+                            "email": "zahra.ahlal@etu.umontpellier.fr",
+                            "level": 5,
+                            "img_profile": "",
+                            "auth_google": false
+                        }
+                    ])
+                }
+            })
+        }, 1000)*/
     })
 })
 
@@ -203,17 +222,17 @@ fs.readFile("./router.json", function(err, routerContent){
 
     for (const [path, content] of Object.entries(routes['api']['POST'])) {
         console.log("[ROUTER] API '" + content['filename'] + "' linked to <POST> '" + api_path_pref + path + "'")
-        server.post(api_path_pref + path, function(req, res) {
+        server.post(api_path_pref + path, function(req, res, next) {
             var temp = require("./api/" + content['filename'])
-            temp.exec(req, res)
+            temp.exec(req, res, next)
         });
     }
 
     for (const [path, content] of Object.entries(routes['api']['GET'])) {
         console.log("[ROUTER] API '" + content['filename'] + "' linked to <GET> '" + api_path_pref + path + "'")
-        server.get(api_path_pref + path, function(req, res) {
+        server.get(api_path_pref + path, function(req, res, next) {
             var temp = require("./api/" + content['filename'])
-            temp.exec(req, res)
+            temp.exec(req, res, next)
         });
     }
 })
