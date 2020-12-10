@@ -2,7 +2,7 @@ var translate = require('node-google-translate-skidz');
 
 module.exports = {
     exec: function(req, res){
-        if(req.params.device_id && req.query.from_lang && req.query.to_lang && req.query.text){
+        if(req.query.from_lang && req.query.to_lang && req.query.text){
             translate({
                 text: req.query.text,
                 source: req.query.from_lang,
