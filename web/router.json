@@ -48,7 +48,11 @@
 			}
 		},
 		"GET": {
-			"/device/*": {
+			"/device": {
+				"filename": "device.js",
+				"login": false
+			},
+			"/device/:device_id": {
 				"filename": "device.js",
 				"login": false
 			},

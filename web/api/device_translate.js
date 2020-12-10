@@ -10,16 +10,16 @@ module.exports = {
             }, function(result) {
                 if(result instanceof Error){
                     res.status(509)
-                    res.send({})  
+                    res.send({error: "Unable to translate"})  
                     return
                 }
 
                 res.status(200)
-                res.send(result.sentences[0].trans)
+                res.send({translation: result.sentences[0].trans})
             });
         } else {
             res.status(400)
-            res.send({})
+            res.send({error: "Arguments missing"})
         }
     }
 }
