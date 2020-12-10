@@ -19,9 +19,18 @@ module.exports = {
 
                     res.status(200)
                     res.send(rows[0])
+                    return
                 } else {
-                    res.status(401)
-                    res.send("Identifiants incorrectes")
+                    db.select(database, 'SELECT * FROM users WHERE auth_google = "true" AND email = "'+email+'"', function(rows){
+                        if(rows && rows.length > 0){
+                            res.status(401)
+                            res.send("Le compte de cette adresse mail a été lié à un compte Google.")
+                        } else {
+                            res.status(401)
+                            res.send("Identifiants incorrectes")
+                        }
+                        return
+                    })
                 }
             })
         } else {
@@ -41,12 +50,20 @@ module.exports = {
 
                                     res.status(200)
                                     res.send(rows[0])
+                                    return
                                 })
                             } else {
                                 db.select(database, 'SELECT * FROM users WHERE auth_google = "false" AND email = "'+userinfo.data.email+'"', function(rows){
                                     if(rows && rows.length > 0){
-                                        res.status(401)
-                                        res.send("Identifiants incorrectes")
+                                        res.cookie("JZ-Translation-auth", encrypt(JSON.stringify({
+                                            "email": rows[0].email,
+                                            "password": rows[0].password,
+                                            "user_id": rows[0].user_id
+                                        })))
+
+                                        res.status(200)
+                                        res.send(rows[0])
+                                        return
                                     } else {
                                         db.insert(database, "users", [
                                             {
@@ -57,7 +74,7 @@ module.exports = {
                                                 "password": "",
                                                 "level": 0
                                             }
-                                        ])
+                                        ]) 
 
                                         db.select(database, 'SELECT * FROM users WHERE auth_google = "true" AND email = "'+userinfo.data.email+'"', function(rows){
                                             res.cookie("JZ-Translation-auth", encrypt(JSON.stringify({
@@ -66,6 +83,7 @@ module.exports = {
         
                                             res.status(200)
                                             res.send(rows[0])
+                                            return
                                         })
 
                                     }
@@ -74,12 +92,14 @@ module.exports = {
                         })
                     } else {
                         res.status(401)
-                        res.send("Identifiants incorrectes")
+                        res.send("Nous n'avons pas pu nous connecter à votre compte Google")
+                        return
                     }
                 })
             } else {
                 res.status(401)
-                res.send("Identifiants incorrectes")
+                res.send("Vous n'avez pas renseigné d'identifiants")
+                return
             }
         }
     }
