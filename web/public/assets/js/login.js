@@ -33,12 +33,12 @@ function send_login_ajax(api_url){
                 }, 2000)
             },
             401: function(xhr, status, err) {
-                toastr.error("<b>Echec d'authentification</b><br>Identifiants incorrectes")
+                toastr.error("<b>Echec d'authentification</b><br>" + (xhr.responseText && xhr.responseText != "" ? xhr.responseText : "Identifiants incorrectes"))
             }
         },
         error: function(xhr, status, err){
             if(xhr.status != 401){
-                toastr.error("Nous rencontrons des difficultés techniques. Réessayez plus tard.")
+                toastr.error("<b>Une erreur technique s'est produite</b><br>" + (xhr.responseText && xhr.responseText != "" ? xhr.responseText : "Erreur interne du serveur. Retentez plus tard."))
             }
         }
     });
