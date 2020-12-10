@@ -79,6 +79,8 @@ module.exports = {
 
         form.parse(req, function (err, fields, formData) {
             var img_profile = false
+            var updatePromises = []
+
             for(var field in fields){
                 if(!(field in uneditableFields)){
                     if(!fieldRequire[field]['nullable'] && (fields[field].replace(/ /gi, "") == "" || fields[field] == undefined)){
@@ -97,7 +99,7 @@ module.exports = {
                     }
 
                     if(field == 'email'){res.cookie("JZ-Translation-auth0", encrypt(fields[field]))}
-                    db.run(database, "UPDATE users SET "+field+" = '"+fields[field]+"' WHERE user_id = " + res.user.user_id)
+                    updatePromises.push(db.run(database, "UPDATE users SET "+field+" = '"+fields[field]+"' WHERE user_id = " + res.user.user_id))
                     response[field] = fields[field]
                 }
             }
@@ -106,8 +108,18 @@ module.exports = {
                 img_profile = true
             }
 
-            if(img_profile){
-                load_file(formData, function(){
+            Promise.all(updatePromises).then(function(){
+                if(img_profile){
+                    load_file(formData, function(){
+                        if(errors.length > 0){
+                            res.status(500)
+                            res.send(errors[0])
+                        } else {
+                            res.status(200)
+                            res.send(response)
+                        }
+                    })
+                } else {
                     if(errors.length > 0){
                         res.status(500)
                         res.send(errors[0])
@@ -115,16 +127,11 @@ module.exports = {
                         res.status(200)
                         res.send(response)
                     }
-                })
-            } else {
-                if(errors.length > 0){
-                    res.status(500)
-                    res.send(errors[0])
-                } else {
-                    res.status(200)
-                    res.send(response)
                 }
-            }
+            }).catch(function(){
+                res.status(401)
+                res.send(errors[0])
+            })
         })
     }
 }
