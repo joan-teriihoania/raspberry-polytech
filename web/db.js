@@ -9,7 +9,7 @@ const sqlite3 = require('sqlite3');
 const server = require('./server')
 
 module.exports = {
-    createDB: function() {
+    createDB: function() {        
         return new sqlite3.Database('database.sqlite3')
     },
     createTable: function(db, tablename, rows) {
@@ -57,7 +57,15 @@ module.exports = {
         }
     },
     run: function(db, request){
-        return db.run(request)
+        return new Promise(function(resolve, reject){
+            db.run(request, function(err){
+                if(err){
+                    reject()
+                } else {
+                    resolve()
+                }
+            })
+        })
     },
     selectAll: function(db, tablename, callback) {
         this.select(db, "SELECT * FROM " + tablename, callback)
