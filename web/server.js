@@ -269,9 +269,38 @@ function update_auth(req, res){
                 if(res.user.img_profile == ""){
                     res.user.img_profile = "/assets/img/avatars/none.png"
                 }
+
+                db.select(database, "SELECT * FROM devices WHERE user_id = " + res.user.user_id, function(rows){
+                    var promises = []
+                    if(rows && rows.length > 0){
+                        res.user.devices = rows
+                        for(row of rows){
+                            promises.push(new Promise(function(resolve, reject){
+                                db.select(database, "SELECT * FROM translations WHERE device_id = " + row.device_id + 
+                                " AND translated_at BETWEEN datetime('now', 'start of month') AND datetime('now', 'localtime');",
+                                function(rows){
+                                    if(rows && rows.length > 0){
+                                        res.user.translations = rows
+                                    } else {
+                                        res.user.translations = []
+                                    }
+                                    resolve()
+                                })
+                            }))
+                        }
+                    } else {
+                        res.user.devices = []
+                        res.user.translations = []
+                    }
+
+                    Promise.all(promises).then(() => {
+                        resolve()
+                    })
+                })
+            } else {
+                resolve()
             }
 
-            resolve()
         })
     })
 }
@@ -321,10 +350,18 @@ function render_page(view, req, res, use_framework=true){
                               .then(() => { // all done!
                                 for (const [key, value] of Object.entries(res.user)) {
                                     framework = replaceAll(framework, '{{ data:user.'+key+' }}', res.user[key])
+                                    if(res.user[key] instanceof Array){framework = replaceAll(framework, '{{ data:user.'+key+'.length }}', res.user[key].length)}
+                                    if(res.user[key] instanceof Object){framework = replaceAll(framework, '{{ data:user.'+key+'.length }}', Object.keys(res.user[key]).length)}
                                 }
                                 
-                                framework = replaceAll(framework, '{{ page_title }}', view['title'])
-                                framework = replaceAll(framework, '{{ google_auth_url }}', googleutils.getAuthURL())
+                                var replaceValues = {
+                                    "page_title": view['title'],
+                                    "google_auth_url": googleutils.getAuthURL()
+                                }
+
+                                for (const [key, value] of Object.entries(replaceValues)) {
+                                    framework = replaceAll(framework, '{{ '+key+' }}', replaceValues[key])
+                                }
 
                                 fs.readdir("./public/assets/js", (err, js_scripts) => {
                                     js_scripts_embed = ""
