@@ -17,8 +17,9 @@ def translate(text, from_lang="french", to_lang="english"):
     device_id = 41
     base_url = "https://raspberry-polytech.joanteriihoania.repl.co"
     api_url = "/api/v1/device/" + str(device_id) + "/translate"
+    auth_key = ""
     try:
-        data = urllib.request.urlopen(base_url + api_url + "?from_lang="+from_lang+"&to_lang="+to_lang+"&text="+urllib.parse.quote(text))
+        data = urllib.request.urlopen(base_url + api_url + "?from_lang="+from_lang+"&to_lang="+to_lang+"&text="+urllib.parse.quote(text)+"&auth_key="+auth_key)
         if(data.status == 200):
             content = str(data.read().decode('UTF-8'))
             content = json.loads(content)
