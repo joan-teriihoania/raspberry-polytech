@@ -1,17 +1,27 @@
 var translate = require('node-google-translate-skidz');
+var {database} = require('../server');
+var db = require('../db');
 
 module.exports = {
     exec: function(req, res, next){
-        var params = req.params['0'] ? req.params['0'].split('/') : []
-        if((req.params.device_id && req.params.device_id == "41") || (params.length > 0 && params[0] == "41")){
-            next()
-        } else {
+        if(!req.query.auth_key || req.query.auth_key != process.env.SECRET_KEY){
             res.status(401)
-            if(!req.params.device_id && params.length == 0){
-                res.send({error: "No specified device ID"})
-            } else {
-                res.send({error: "Unrecognized device ID"})
-            }
+            res.send({error: "Unrecognized authentification key"})
+            return
+        }
+
+        if(req.params.device_id){
+            db.select(database, "SELECT * FROM devices WHERE device_id = " + req.params.device_id, function(rows){
+                if(rows && rows.length > 0){
+                    next()
+                } else {
+                    res.status(400)
+                    res.send({error: "Unrecognized device ID"})
+                }
+            })
+        } else {
+            res.status(400)
+            res.send({error: "Unspecified device ID"})
         }
     }
 }

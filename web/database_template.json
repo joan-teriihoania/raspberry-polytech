@@ -44,7 +44,7 @@
         },
         {
             "name": "icon",
-            "type": "TEXT DEFAULT '#'",
+            "type": "TEXT DEFAULT 'icons'",
             "primary": false,
             "not_null": true
         }
@@ -129,6 +129,58 @@
             "type": "BOOLEAN DEFAULT 0",
             "primary": false,
             "not_null": true
+        }
+    ],
+    "devices":[
+        {
+            "name": "device_id",
+            "type": "INTEGER",
+            "primary": true,
+            "not_null": false
+        },
+        {
+            "name": "user_id",
+            "type": "INTEGER",
+            "primary": false,
+            "not_null": false
+        }
+    ],
+    "translations":[
+        {
+            "name": "translation_id",
+            "type": "INTEGER",
+            "primary": true,
+            "not_null": false
+        },
+        {
+            "name": "from_lang",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "to_lang",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "text",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "translated_at",
+            "type": "DATETIME DEFAULT CURRENT_TIMESTAMP",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "device_id",
+            "type": "INTEGER",
+            "primary": false,
+            "not_null": false
         }
     ]
 }
