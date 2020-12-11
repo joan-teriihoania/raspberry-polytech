@@ -85,7 +85,7 @@ module.exports = {
                                                 return
                                             })
                                         }).catch(() => {
-                                            res.status(500)
+                                            res.status(401)
                                             res.send("Un compte ayant la même adresse mail que votre compte Google existe mais n'y est pas lié.")
                                             return
                                         })
@@ -107,3 +107,13 @@ module.exports = {
         }
     }
 }
+
+function generateAuthKey(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+ }
