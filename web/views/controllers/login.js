@@ -1,13 +1,14 @@
 const auth = require('../../auth');
-const { authentificate } = require('../../googleutils');
+const googleutils = require('../../googleutils');
 
 module.exports = {
-    format: function(content, req, res){
+    format: function(content, req, res, callback){
         if(res.user.is_auth){
             res.redirect('/')
-            return false
+            callback(false)
         } else {
-            return content
+            content = content.replace(/{{ google_auth_url }}/gi, googleutils.getAuthURL())
+            callback(content)
         }
     }
 }

@@ -10,7 +10,7 @@ module.exports = {
                 res.send(rows)
                 res.end()
             } else {
-                res.end()
+                res.send([])
             }
         })
     }

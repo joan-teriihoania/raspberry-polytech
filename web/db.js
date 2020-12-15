@@ -40,6 +40,8 @@ module.exports = {
         var templateRows = {
             "rowName": "rowContent"
         }
+
+        var lastIDs = []
         
         return new Promise(function(resolve, reject){
             var promises = []
@@ -60,8 +62,9 @@ module.exports = {
                     new Promise(function(resolve, reject){
                         db.run("INSERT INTO " + tablename + "("+cols.join(', ')+") VALUES ("+values.join(", ")+")", function(err){
                             if(err){
-                                reject()
+                                reject(err)
                             } else {
+                                lastIDs.push(this.lastID)
                                 resolve()
                             }
                         })
@@ -70,7 +73,7 @@ module.exports = {
             }
 
             Promise.all(promises).then(() => {
-                resolve()
+                resolve(lastIDs)
             }).catch(() => {
                 reject()
             })

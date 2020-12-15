@@ -2,7 +2,8 @@ const fs = require('fs')
 const formidable = require('formidable')
 const { database } = require('../server')
 const db = require('../db')
-const { encrypt } = require('../crypto')
+const { encrypt, decrypt } = require('../crypto')
+const auth = require('../auth')
 
 
 module.exports = {
@@ -63,7 +64,7 @@ module.exports = {
         }
 
         var form = new formidable.IncomingForm();
-        var uneditableFields = ["password", "user_id", "level"]
+        var uneditableFields = ["password", "new_password_confirm", "user_id", "level", "auth_key"]
         var fieldRequire = {
             "username": {
                 "regex": /[`!@#$%^&*()+\=\[\]{};':"\\|,<>\/?~]/,
@@ -80,53 +81,76 @@ module.exports = {
         form.parse(req, function (err, fields, formData) {
             var img_profile = false
             var updatePromises = []
+            var new_email = undefined
+            var new_password = undefined
 
             for(var field in fields){
-                if(!(field in uneditableFields)){
-                    if(!fieldRequire[field]['nullable'] && (fields[field].replace(/ /gi, "") == "" || fields[field] == undefined)){
-                        errors.push("Le champ '"+field+"' doit être obligatoirement remplis")
-                        break
+                if(!(uneditableFields.includes(field))){
+                    if(fieldRequire[field]){
+                        if(!fieldRequire[field]['nullable'] && (fields[field].replace(/ /gi, "") == "" || fields[field] == undefined)){
+                            errors.push("Le champ '"+field+"' doit être obligatoirement remplis")
+                            break
+                        }
+
+                        if(fieldRequire[field]['regex'].test(fields[field])){
+                            errors.push("Le champ '"+field+"' contient des caractères interdits.")
+                            break
+                        }
+                        
+                        if(typeof(fields[field]) != fieldRequire[field]['type']){
+                            errors.push("Le champ '"+field+"' n'est pas de type '"+fieldRequire[field]['type']+"'")
+                            break
+                        }
                     }
 
-                    if(fieldRequire[field]['regex'].test(fields[field])){
-                        errors.push("Le champ '"+field+"' contient des caractères interdits.")
+                    if(field == "email"){
+                        updatePromises.push(db.run(database, "UPDATE users SET "+field+" = '"+fields[field]+"' WHERE auth_google = 'false' AND user_id = " + res.user.user_id))
+                        new_email = fields[field]
+                        response[field] = fields[field]
+                        continue
+                    }
+
+                    if(field == "new_password"){
+                        if(fields[field] == "" && fields[field] == ""){continue}
+                        if(fields["new_password_confirm"] != undefined && fields["new_password_confirm"] != ""){
+                            if(fields['new_password'] == fields['new_password_confirm']){
+                                updatePromises.push(db.run(database, "UPDATE users SET password = '"+fields[field]+"' WHERE user_id = " + res.user.user_id))
+                                new_password = fields[field]
+                                response[field] = fields[field]
+                                continue
+                            }
+                        }
+                        errors.push("Le nouveau mot de passe ne correspond pas à la confirmation")
                         break
                     }
                     
-                    if(typeof(fields[field]) != fieldRequire[field]['type']){
-                        errors.push("Le champ '"+field+"' n'est pas de type '"+fieldRequire[field]['type']+"'")
-                        break
-                    }
-
-                    if(field == 'email'){res.cookie("JZ-Translation-auth0", encrypt(fields[field]))}
                     updatePromises.push(db.run(database, "UPDATE users SET "+field+" = '"+fields[field]+"' WHERE user_id = " + res.user.user_id))
                     response[field] = fields[field]
                 }
             }
 
-            if(formData['img_profile'] != undefined){
-                img_profile = true
-            }
+            if(formData['img_profile'] != undefined){img_profile = true}
 
             Promise.all(updatePromises).then(function(){
-                if(img_profile){
-                    load_file(formData, function(){
-                        if(errors.length > 0){
-                            res.status(500)
-                            res.send(errors[0])
-                        } else {
-                            res.status(200)
-                            res.send(response)
-                        }
-                    })
-                } else {
+                var finalize_edit = function(){
                     if(errors.length > 0){
                         res.status(500)
                         res.send(errors[0])
                     } else {
+                        var auth_ = req.cookies["JZ-Translation-auth"]
+                        var user = JSON.parse(decrypt(auth_))
+                        user.email = new_email != undefined ? new_email : user.email
+                        user.password = new_password != undefined ? new_password : user.password
+                        res.cookie("JZ-Translation-auth", encrypt(JSON.stringify(user)))
                         res.status(200)
                         res.send(response)
                     }
+                }
+
+                if(img_profile){
+                    load_file(formData, finalize_edit)
+                } else {
+                    finalize_edit()
                 }
             }).catch(function(){
                 res.status(401)

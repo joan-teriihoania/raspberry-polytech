@@ -28,6 +28,8 @@ def translate(text, from_lang="french", to_lang="english"):
         if(data.status == 402):
             core.terminate(1)
 
+            
+
         return None
     except:
         return None

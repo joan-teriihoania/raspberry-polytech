@@ -5,84 +5,201 @@
 			"title": "Tableau de bord",
 			"css": [],
 			"js": [],
-			"login": true
+			"login": true,
+			"autorefresh": false
+		},
+		"/api": {
+			"filename": "api",
+			"title": "Documentation (API)",
+			"css": [],
+			"js": [],
+			"login": false,
+			"autorefresh": false
 		},
 		"/account": {
 			"filename": "profile",
 			"title": "Votre profil",
 			"css": [],
 			"js": [],
-			"login": true
+			"login": true,
+			"autorefresh": false
 		},
-		"/table": {
-			"filename": "table",
-			"title": "Tableaux",
+		"/account/device": {
+			"filename": "devices",
+			"title": "Vos appareils",
 			"css": [],
 			"js": [],
-			"login": false
+			"login": true,
+			"autorefresh": true
+		},
+		"/account/device/:device_id": {
+			"filename": "device",
+			"title": "Configuration",
+			"css": [],
+			"js": [],
+			"login": true,
+			"autorefresh": true
 		},
 		"/login": {
 			"filename": "login",
 			"title": "Connexion",
 			"css": [],
 			"js": [],
-			"login": false
+			"login": false,
+			"autorefresh": false
 		},
 		"/login/google": {
 			"filename": "login",
 			"title": "Connexion Google",
 			"css": [],
 			"js": [],
-			"login": false
+			"login": false,
+			"autorefresh": false
 		}
 	},
 	"api":{
 		"POST": {
 			"/account": {
 				"filename": "edit_profile.js",
-				"login": true
+				"login": true,
+				"description": "Modifier un champ du profil utilisateur connecté",
+				"params":["username", "email", "new_password", "new_password_confirm"],
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
 			},
-			"/ping": {
-				"filename": "ping.js",
-				"login": false
+			"/account/notifications/:notif_id": {
+				"filename": "notifications_mark_seen.js",
+				"login": true,
+				"description": "Marquer la notification souhaitée lue",
+				"return": {
+					"success": "String",
+					"error": "String"
+				}
+			},
+			"/device/bind": {
+				"filename": "device_bind.js",
+				"login": true,
+				"description": "Lier un appareil de traduction au compte connecté via son code PIN",
+				"params":["pin_code"],
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
+			},
+			"/device/ask_link": {
+				"filename": "device_ask_link.js",
+				"login": false,
+				"admin": true,
+				"description": "Placer un appareil de traduction en attente de liaison à un compte",
+				"params":["device_id"],
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
 			}
 		},
 		"GET": {
+			"/device/:device_id": {
+				"filename": "device_info.js",
+				"login": false,
+				"admin": true,
+				"description": "Les informations sur l'appareil de traduction souhaité",
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
+			},
 			"/device/:device_id/*": {
 				"filename": "device.js",
-				"login": false
+				"login": true
 			},
 			"/device/:device_id/translate": {
 				"filename": "device_translate.js",
-				"login": false
+				"login": true,
+				"description": "Demande une traduction d'une phrase en utilisant le quota de l'appareil spécifié",
+				"params": ["from_lang", "to_lang", "text"],
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
+			},
+			"/device/:device_id/translations": {
+				"filename": "device_translations.js",
+				"login": true,
+				"description": "L'historique de traduction (selon les paramètres fournis) de l'appareil spécifié",
+				"params": ["month_ago", "week_ago", "day_ago"],
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
+			},
+			"/account/translations": {
+				"filename": "translations.js",
+				"login": true,
+				"description": "L'historique de traduction (selon les paramètres fournis) de l'utilisateur connecté",
+				"params": ["month_ago", "week_ago", "day_ago"],
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
 			},
 			"/account/notifications": {
 				"filename": "notifications.js",
-				"login": true
+				"login": true,
+				"description": "Toutes les notifications de l'utilisateur connecté",
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
 			},
 			"/account": {
 				"filename": "profile.js",
-				"login": true
-			},
-			"/account/bind/google": {
-				"filename": "auth_google.js",
-				"login": true
+				"login": true,
+				"description": "Les informations de profil de l'utilisateur connecté",
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
 			},
 			"/login": {
 				"filename": "login.js",
-				"login": false
+				"login": false,
+				"description": "Se connecter via un email et un mot de passe",
+				"params": ["email", "password"],
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
 			},
 			"/login/google": {
 				"filename": "login.js",
-				"login": false
+				"login": false,
+				"description": "Se connecter via un compte Google (liaison avec OAuth2)",
+				"params": ["code"],
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
 			},
 			"/logout": {
 				"filename": "logout.js",
-				"login": false
+				"login": true,
+				"description": "Se déconnecter du compte connecté",
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
 			},
 			"/ping": {
 				"filename": "ping.js",
-				"login": false
+				"login": false,
+				"description": "L'état du serveur ainsi que votre statut d'authentification",
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
 			}
 		}
 	}

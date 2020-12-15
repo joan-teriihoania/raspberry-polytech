@@ -129,6 +129,18 @@
             "type": "BOOLEAN DEFAULT 0",
             "primary": false,
             "not_null": true
+        },
+        {
+            "name": "auth_key",
+            "type": "TEXT UNIQUE",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "quota",
+            "type": "INTEGER DEFAULT 0",
+            "primary": false,
+            "not_null": true
         }
     ],
     "devices":[
@@ -142,7 +154,19 @@
             "name": "user_id",
             "type": "INTEGER",
             "primary": false,
-            "not_null": false
+            "not_null": true
+        },
+        {
+            "name": "pin_code",
+            "type": "TEXT UNIQUE",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "linked",
+            "type": "BOOLEAN DEFAULT 0",
+            "primary": false,
+            "not_null": true
         }
     ],
     "translations":[

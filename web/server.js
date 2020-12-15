@@ -14,7 +14,6 @@ dotenv.config();
 
 var database = db.createDB()
 var routes = {}
-var api_path_pref = "/api/v1"
 
 /*
   Read the router.json file to retrieve data about the routes
@@ -50,13 +49,13 @@ server.all('*', function(req, res, next){
     }
     
     update_auth(req, res).then(() => {
-        if(req.path.substr(0, api_path_pref.length) == api_path_pref){
-            api_info = routes['api'][req.method][req.path.replace(api_path_pref, '')]
+        if(req.path.substr(0, process.env.API_PATH_PREF.length) == process.env.API_PATH_PREF){
+            api_info = routes['api'][req.method][req.path.replace(process.env.API_PATH_PREF, '')]
             if(api_info == undefined){
                 var req_path = req.path.split('/')
 
                 for(const [path, content] of Object.entries(routes['api'][req.method])){
-                    var api_path = (api_path_pref + path).split('/')
+                    var api_path = (process.env.API_PATH_PREF + path).split('/')
                     var loaded_api_path = []
                     var loaded_req_path = []
                     for(var i = 0; i < api_path.length; i++){
@@ -90,6 +89,12 @@ server.all('*', function(req, res, next){
                 res.end("Echec d'authentification : Vous devez être connecté pour accéder à cette page ou faire cette action.")
                 return
             }
+
+            if(api_info.admin && req.body.auth_key != process.env.SECRET_KEY && req.query.auth_key != process.env.SECRET_KEY){
+                res.status(401)
+                res.end("L'accès à cet API est réservé aux administrateurs")
+                return
+            }
         }
 
         next()
@@ -97,7 +102,7 @@ server.all('*', function(req, res, next){
 })
 
 server.get('*', function(req, res, next){
-    if(req.path.substr(0, api_path_pref.length) == api_path_pref){
+    if(req.path.substr(0, process.env.API_PATH_PREF.length) == process.env.API_PATH_PREF){
         next()
         return
     }
@@ -115,11 +120,11 @@ server.get('*', function(req, res, next){
             var loaded_req_path = []
 
             for(var i = 0; i < view_path.length; i++){
-                if(!view_path[i].startsWith(':')){
+                if(!view_path[i].startsWith(':') || !view_path[i] == "ajax"){
                     loaded_view_path.push(view_path[i])
                     loaded_req_path.push(req_path[i])
                 } else {
-                    loaded_api_path.push(req_path[i])
+                    loaded_view_path.push(req_path[i])
                     loaded_req_path.push(req_path[i])
                 }
             }
@@ -129,7 +134,7 @@ server.get('*', function(req, res, next){
             }
         }
     }
-
+    
     if(!view_info){
         res.status(404)
         render_page({"filename": "404", "title": "Page introuvable"}, req, res)
@@ -141,8 +146,8 @@ server.get('*', function(req, res, next){
         render_page({"filename": "login", "title": "Connexion"}, req, res)
         return
     }
-
-    // if(res.user.is_auth){ console.log("[MONITOR] ("+res.user.username+"@"+res.user.user_id+"-"+res.ip+") >> " + req.path) }
+    
+    if(res.user.is_auth && req.path.split('/')[1] != "ajax"){ console.log("[MONITOR] ("+res.user.username+"@"+res.user.user_id+"-"+res.ip+") >> " + req.path) }
     next()
 })
 
@@ -154,49 +159,6 @@ server.listen(process.env.PORT, function(){
             console.log("[DB-CONFIG] Table " + tablename + " configured")
             db.createTable(database, tablename, rows)
         }
-
-        // Adding timeout to let createTable time to load the new tables
-        /*setTimeout(function(){
-            console.log("[DB-CONFIG] Adding default users values")
-            db.select(database, "SELECT * FROM users WHERE username = 'Arcadia_sama' OR username = 'joan.teriihoania' OR username = 'zahra.ahlal'", function(rows){
-                if(!rows || rows.length == 0){
-                    db.insert(database, "users", [
-                        {
-                            "username": "Arcadia_sama",
-                            "password": "123",
-                            "email": "joprocorp@gmail.com",
-                            "level": 5,
-                            "img_profile": "",
-                            "auth_google": true
-                        },
-                        {
-                            "username": "Joan",
-                            "password": "123",
-                            "email": "teriihoaniaheimanu@gmail.com",
-                            "level": 5,
-                            "img_profile": "",
-                            "auth_google": false
-                        },
-                        {
-                            "username": "joan.teriihoania",
-                            "password": "raspberry",
-                            "email": "joan.teriihoania@etu.umontpellier.fr",
-                            "level": 5,
-                            "img_profile": "",
-                            "auth_google": false
-                        },
-                        {
-                            "username": "zahra.ahlal",
-                            "password": "raspberry",
-                            "email": "zahra.ahlal@etu.umontpellier.fr",
-                            "level": 5,
-                            "img_profile": "",
-                            "auth_google": false
-                        }
-                    ])
-                }
-            })
-        }, 1000)*/
     })
 })
 
@@ -219,18 +181,18 @@ fs.readFile("./router.json", function(err, routerContent){
             render_page(content, req, res, false)
         });
     }
-
+    
     for (const [path, content] of Object.entries(routes['api']['POST'])) {
-        console.log("[ROUTER] API '" + content['filename'] + "' linked to <POST> '" + api_path_pref + path + "'")
-        server.post(api_path_pref + path, function(req, res, next) {
+        console.log("[ROUTER] API '" + content['filename'] + "' linked to <POST> '" + process.env.API_PATH_PREF + path + "'")
+        server.post(process.env.API_PATH_PREF + path, function(req, res, next) {
             var temp = require("./api/" + content['filename'])
             temp.exec(req, res, next)
         });
     }
 
     for (const [path, content] of Object.entries(routes['api']['GET'])) {
-        console.log("[ROUTER] API '" + content['filename'] + "' linked to <GET> '" + api_path_pref + path + "'")
-        server.get(api_path_pref + path, function(req, res, next) {
+        console.log("[ROUTER] API '" + content['filename'] + "' linked to <GET> '" + process.env.API_PATH_PREF + path + "'")
+        server.get(process.env.API_PATH_PREF + path, function(req, res, next) {
             var temp = require("./api/" + content['filename'])
             temp.exec(req, res, next)
         });
@@ -250,16 +212,13 @@ function update_auth(req, res){
 
         var user = JSON.parse(decrypt(auth_))
         res.user = {
-            username: "",
-            img_profile: "/assets/img/avatars/none.png",
-            email: "",
-            level: 0,
             is_auth: false
         }
         
-        auth.is_auth(database, user, function(is_auth, info){
-            res.user.is_auth = is_auth
-            if(is_auth){
+        auth.is_auth(database, user, req, function(auth_method, info){
+            res.user.is_auth = auth_method != false ? true : false
+            res.user.auth_method = auth_method
+            if(auth_method){
                 for (const [key, value] of Object.entries(info)) {
                     if(key != "password"){
                         res.user[key] = value
@@ -305,24 +264,32 @@ function update_auth(req, res){
     })
 }
 
-function render_page(view, req, res, use_framework=true){
+function render_page(view, req, res, use_framework=true, replaceValues = {}){
     fs.readFile("./views/framework.html", function(err, framework){
         if(use_framework){
             framework = framework.toString()
         } else {
             framework = "{{ page }}"
         }
+
         fs.readFile("./views/pages/" + view['filename'] + ".html", function(err, page){
             if(!err){
-                fs.stat('./views/controllers/' + view['filename'] + ".js", function(err, stats){
-                    if(!err){
-                        var pageController = require('./views/controllers/' + view['filename'])
-                        page = pageController.format(page.toString(), req, res)
-                        if(page == false){
-                            return
-                        }
-                    }
-
+                var promise
+                try {
+                    var pageController = require('./views/controllers/' + view['filename'] + '.js')
+                    promise = new Promise(function(resolve, reject){
+                        pageController.format(page.toString(), req, res, function(page){
+                            resolve(page)
+                        })
+                    })
+                } catch(err) {
+                    promise = new Promise(function(resolve, reject){
+                        resolve(page.toString())
+                    })
+                }
+                
+                promise.then(function(page){
+                    if(page == false){return}
                     var elementsFolder = "./views/elements/"
                     framework = replaceAll(framework, '{{ page }}', page)
     
@@ -347,25 +314,23 @@ function render_page(view, req, res, use_framework=true){
                             }
                 
                             Promise.all(loadElements)
-                              .then(() => { // all done!
+                                .then(() => { // all done!
                                 for (const [key, value] of Object.entries(res.user)) {
                                     framework = replaceAll(framework, '{{ data:user.'+key+' }}', res.user[key])
                                     if(res.user[key] instanceof Array){framework = replaceAll(framework, '{{ data:user.'+key+'.length }}', res.user[key].length)}
                                     if(res.user[key] instanceof Object){framework = replaceAll(framework, '{{ data:user.'+key+'.length }}', Object.keys(res.user[key]).length)}
                                 }
-                                
-                                var replaceValues = {
-                                    "page_title": view['title'],
-                                    "google_auth_url": googleutils.getAuthURL()
-                                }
 
+                                replaceValues['page_title'] = view['title']
+    
                                 for (const [key, value] of Object.entries(replaceValues)) {
                                     framework = replaceAll(framework, '{{ '+key+' }}', replaceValues[key])
                                 }
-
+    
                                 fs.readdir("./public/assets/js", (err, js_scripts) => {
                                     js_scripts_embed = ""
                                     for(js_script of js_scripts){
+                                        if(js_script == "autorefresh.js" && !view.autorefresh){continue}
                                         js_scripts_embed += '<script src="/assets/js/'+js_script+'"></script>\n'
                                     }
     
@@ -374,7 +339,7 @@ function render_page(view, req, res, use_framework=true){
                                         res.send(framework)
                                     }
                                 })
-                              })
+                            })
                         })
                     });
                 })
@@ -388,9 +353,21 @@ function replaceAll(str,replaceWhat,replaceTo){
     return str.replace(re,replaceTo);
 }
 
+function generateAuthKey(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+ }
+
 module.exports = {
     database,
     update_database: function(newdatabase){
         database = newdatabase
-    }
+    },
+    replaceAll,
+    generateAuthKey
 }

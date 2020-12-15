@@ -3,10 +3,9 @@ var authChecker = setInterval(function(){
         return
     }
 
-    $.ajax({
-        url: "/api/v1/ping",
-        statusCode: {
-            200: function(response, status, xhr) {
+    ajax_authChecker(function(response, status, xhr){
+        if(!response.is_auth){
+            setTimeout(ajax_authChecker(function(response, status, xhr){
                 if(!response.is_auth){
                     stop_authChecker()
                     Swal.fire({
@@ -16,10 +15,21 @@ var authChecker = setInterval(function(){
                         footer: '<div class="alert alert-warning" role="alert">Enregistrez votre travail sur un support extérieur puis rechargez la page pour vous reconnecter.</div>',
                     })
                 }
+            }), 1000)
+        }
+    })
+}, 5000)
+
+function ajax_authChecker(callback){
+    $.ajax({
+        url: "/api/v1/ping",
+        statusCode: {
+            200: function(response, status, xhr) {
+                callback(response, status, xhr)
             }
         }
     });
-}, 1000)
+}
 
 function stop_authChecker(){
     clearInterval(authChecker)
