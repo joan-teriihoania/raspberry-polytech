@@ -7,7 +7,7 @@ module.exports = {
             db.select(database, "SELECT * FROM devices WHERE device_id = " + req.params.device_id, function(devices){
                 if(devices && devices.length > 0){
                     db.select(database, "SELECT * FROM users WHERE user_id = " + devices[0].user_id + " AND auth_key = '"+res.user.auth_key+"'", function(users){
-                        if(users && users.length > 0){
+                        if(users && users.length > 0 || req.query.auth_key == process.env.SECRET_KEY || req.body.auth_key == process.env.SECRET_KEY){
                             next()
                         } else {
                             res.status(400)

@@ -278,8 +278,24 @@ function render_page(view, req, res, use_framework=true, replaceValues = {}){
                 try {
                     var pageController = require('./views/controllers/' + view['filename'] + '.js')
                     promise = new Promise(function(resolve, reject){
-                        pageController.format(page.toString(), req, res, function(page){
-                            resolve(page)
+                        var ressourceFolder = './views/pages/' + view['filename'] + '/'
+                        var ressourceFilesPromise = []
+                        var ressourceFiles = {}
+                        if(fs.existsSync(ressourceFolder)){
+                            ressourceFilesPromise.push(new Promise(function(resolve, reject){
+                                fs.readdir(ressourceFolder, (err, ressourceFilesNames) => {
+                                    fm.readFiles(ressourceFolder, ressourceFilesNames, function(_ressourceFiles){
+                                        ressourceFiles = _ressourceFiles
+                                        resolve()
+                                    })
+                                })
+                            }))
+                        }
+
+                        Promise.all(ressourceFilesPromise).then(() => {
+                            pageController.format(page.toString(), req, res, ressourceFiles, function(page){
+                                resolve(page)
+                            })
                         })
                     })
                 } catch(err) {
@@ -294,14 +310,15 @@ function render_page(view, req, res, use_framework=true, replaceValues = {}){
                     framework = replaceAll(framework, '{{ page }}', page)
     
                     fs.readdir(elementsFolder, (err, elementsFiles) => {
-                        fm.readFiles(elementsFiles.map(val => elementsFolder + val), function(dataElementFiles){
+                        fm.readFiles(elementsFolder, elementsFiles, function(dataElementFiles){
                             let loadElements = []
     
                             for (const [filename, content] of Object.entries(dataElementFiles)) {
-                                if(filename.substring(filename.length - 2) == "js"){
-                                    var elementController = require(filename)
+                                var _filename = elementsFolder + filename
+                                if(_filename.substring(_filename.length - 2) == "js"){
+                                    var elementController = require(_filename)
                                     
-                                    var filenameAlone = filename.split("/")
+                                    var filenameAlone = _filename.split("/")
                                     filenameAlone = filenameAlone[filenameAlone.length-1]
                                     loadElements.push(new Promise(function(resolve, reject){
                                         var keyword = filenameAlone.substring(0, filenameAlone.length - 3)

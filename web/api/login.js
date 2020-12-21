@@ -8,13 +8,11 @@ module.exports = {
         var email = req.query.email
         var password = req.query.password
         var code = req.query.code
-        if(email && password){
+        if(email != undefined && password != undefined){
             db.select(database, 'SELECT * FROM users WHERE auth_google = "false" AND email = "'+email+'" AND password = "'+password+'"', function(rows){
                 if(rows && rows.length > 0){
                     res.cookie("JZ-Translation-auth", encrypt(JSON.stringify({
-                        "email": email,
-                        "password": password,
-                        "user_id": rows[0].user_id
+                        "auth_key": rows[0].auth_key
                     })))
 
                     res.status(200)
@@ -34,7 +32,7 @@ module.exports = {
                 }
             })
         } else {
-            if(code){
+            if(code != undefined){
                 googleutils.authentificate(code, function(userinfo){
                     if(userinfo){
                         db.select(database, 'SELECT * FROM users WHERE auth_google = "true" AND email = "'+userinfo.data.email+'"', function(rows){
@@ -75,7 +73,7 @@ module.exports = {
                                                 res.cookie("JZ-Translation-auth", encrypt(JSON.stringify({
                                                     "access_token": userinfo.access_token
                                                 })))
-            
+                                                db.run(database, 'UPDATE users SET auth_key = "' + rows[0].user_id + rows[0].auth_key + '" WHERE user_id = ' + rows[0].user_id)
                                                 res.status(200)
                                                 res.send(rows[0])
                                                 return

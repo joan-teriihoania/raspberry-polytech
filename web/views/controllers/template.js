@@ -1,5 +1,5 @@
 module.exports = {
-    format: function(content, req, res, callback){
+    format: function(content, req, res, ressources, callback){
         callback(content)
     }
 }

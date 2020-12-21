@@ -3,7 +3,7 @@ var db = require('../../db');
 var fs = require('fs')
 
 module.exports = {
-    format: function(content, req, res, callback){
+    format: function(content, req, res, ressources, callback){
         if(req.params.device_id){
             db.select(database, "SELECT * FROM devices WHERE device_id = " + req.params.device_id, function(devices){
                 if(devices && devices.length > 0){

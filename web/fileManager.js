@@ -2,14 +2,14 @@ const { fstat } = require("fs")
 const fs = require('fs')
 
 module.exports = {
-    readFiles: function(files, callback){
+    readFiles: function(folder, files, callback){
         return new Promise(function (resolve, reject) {
-            let filesContents = []
+            let filesContents = {}
             const promises = files.map(file => { // get back an array of promises
               return new Promise(function(resolve, reject){
-                fs.stat(file, function(err, stats){
+                fs.stat(folder + file, function(err, stats){
                   if(stats.isFile()){
-                    fs.readFile(file, function(err, data) {
+                    fs.readFile(folder + file, function(err, data) {
                       if(!err){
                         filesContents[file] = data.toString()
                         resolve()

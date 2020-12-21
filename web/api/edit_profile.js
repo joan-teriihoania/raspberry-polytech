@@ -137,11 +137,6 @@ module.exports = {
                         res.status(500)
                         res.send(errors[0])
                     } else {
-                        var auth_ = req.cookies["JZ-Translation-auth"]
-                        var user = JSON.parse(decrypt(auth_))
-                        user.email = new_email != undefined ? new_email : user.email
-                        user.password = new_password != undefined ? new_password : user.password
-                        res.cookie("JZ-Translation-auth", encrypt(JSON.stringify(user)))
                         res.status(200)
                         res.send(response)
                     }

@@ -25,9 +25,9 @@ module.exports = {
             return
         }
 
-        if(user.email && user.password && user.user_id){
-            db.select(database, 'SELECT * FROM users WHERE auth_google = "false" AND email = "'+user.email+'" AND password = "'+user.password+'"', function(rows){
-                if(rows && rows.length > 0 && user.user_id == rows[0].user_id){
+        if(user.auth_key){
+            db.select(database, 'SELECT * FROM users WHERE auth_google = "false" AND auth_key = "'+user.auth_key+'"', function(rows){
+                if(rows && rows.length > 0){
                     callback("credentials", rows[0])
                 } else {
                     callback(false, undefined)

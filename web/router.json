@@ -48,6 +48,22 @@
 			"login": false,
 			"autorefresh": false
 		},
+		"/account/create": {
+			"filename": "register",
+			"title": "Inscription",
+			"css": [],
+			"js": [],
+			"login": false,
+			"autorefresh": false
+		},
+		"/account/reset": {
+			"filename": "reset",
+			"title": "Réinitialisation du mot de passe",
+			"css": [],
+			"js": [],
+			"login": false,
+			"autorefresh": false
+		},
 		"/login/google": {
 			"filename": "login",
 			"title": "Connexion Google",
@@ -64,6 +80,16 @@
 				"login": true,
 				"description": "Modifier un champ du profil utilisateur connecté",
 				"params":["username", "email", "new_password", "new_password_confirm"],
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
+			},
+			"/account/reset": {
+				"filename": "account_reset_password.js",
+				"login": false,
+				"description": "Demander la réinitialisation du mot de passe d'un compte à partir de son adresse mail",
+				"params":["email"],
 				"return": {
 					"success": "JSON",
 					"error": "String"
@@ -98,6 +124,15 @@
 					"success": "JSON",
 					"error": "String"
 				}
+			},
+			"/ping": {
+				"filename": "ping.js",
+				"login": false,
+				"description": "L'état du serveur ainsi que votre statut d'authentification",
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
 			}
 		},
 		"GET": {
@@ -117,7 +152,8 @@
 			},
 			"/device/:device_id/translate": {
 				"filename": "device_translate.js",
-				"login": true,
+				"login": false,
+				"admin": true,
 				"description": "Demande une traduction d'une phrase en utilisant le quota de l'appareil spécifié",
 				"params": ["from_lang", "to_lang", "text"],
 				"return": {
@@ -185,7 +221,7 @@
 			},
 			"/logout": {
 				"filename": "logout.js",
-				"login": true,
+				"login": false,
 				"description": "Se déconnecter du compte connecté",
 				"return": {
 					"success": "JSON",

@@ -4,6 +4,7 @@ import json
 #from translate import Translator
 #from translate.providers import base
 import core
+import jz_translation_server
 
 # @Desc : Translate given text from a language to another
 # @Params:
@@ -13,26 +14,23 @@ import core
 # @Returns: The translated text
 # @Exception:
 #   UsageLimit: If the API has used the daily quota of translation assigned
-def translate(text, from_lang="french", to_lang="english"):
-    device_id = 41
-    base_url = "https://raspberry-polytech.joanteriihoania.repl.co"
-    api_url = "/api/v1/device/" + str(device_id) + "/translate"
-    auth_key = ""
-    try:
-        data = urllib.request.urlopen(base_url + api_url + "?from_lang="+from_lang+"&to_lang="+to_lang+"&text="+urllib.parse.quote(text)+"&auth_key="+auth_key)
-        if(data.status == 200):
-            content = str(data.read().decode('UTF-8'))
-            content = json.loads(content)
-            return content['translation']
-        
-        if(data.status == 402):
-            core.terminate(1)
+def translate(text, from_lang="fr", to_lang="it"):
+    status, res = jz_translation_server.send_get("/device/:device_id:/translate", {
+        "from_lang": from_lang,
+        "to_lang": to_lang,
+        "text": urllib.parse.quote(text)
+    })
 
-            
+    print(status, res)
+    if(status == 200):
+        content = str(res.read().decode('UTF-8'))
+        content = json.loads(content)
+        return content['translation']
+    if(status == 402):
+        core.terminate(1)
+        return
 
-        return None
-    except:
-        return None
+    return status, res
 
 # def translate_with_Translator(text, from_lang="french", to_lang="english"):
 #     translator = Translator(from_lang=from_lang, to_lang=to_lang)
@@ -44,3 +42,5 @@ def translate(text, from_lang="french", to_lang="english"):
 #     if(isinstance(translation, str)):
 #         translation = html.unescape(translation)
 #     return translation
+
+print(translate("bonjour tout le monde"))

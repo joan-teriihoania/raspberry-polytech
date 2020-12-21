@@ -84,7 +84,8 @@ module.exports = {
         return new Promise(function(resolve, reject){
             db.run(request, function(err){
                 if(err){
-                    reject()
+                    console.log(err)
+                    reject(err)
                 } else {
                     resolve()
                 }
