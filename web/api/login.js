@@ -74,6 +74,15 @@ module.exports = {
                                                     "access_token": userinfo.access_token
                                                 })))
                                                 db.run(database, 'UPDATE users SET auth_key = "' + rows[0].user_id + rows[0].auth_key + '" WHERE user_id = ' + rows[0].user_id)
+                                                db.insert(database, "notifications", [
+                                                    {
+                                                        "user_id": rows[0].user_id,
+                                                        "type": "success",
+                                                        "title": "Bienvenue !",
+                                                        "content": "Votre compte a été créé avec succès",
+                                                        "icon": "home"
+                                                    }
+                                                ])
                                                 res.status(200)
                                                 res.send(rows[0])
                                                 return

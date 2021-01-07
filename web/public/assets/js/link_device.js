@@ -16,7 +16,7 @@ function link_device(){
             Swal.showLoading()
           
             $.ajax({
-                url: "/api/v1/device/bind",
+                url: "/api/v1/device/link",
                 type: "POST",
                 data: "pin_code=" + value,
                 complete: function(){

@@ -4,7 +4,7 @@ var notificationItemTemplate =
     '        <div class="bg-{{ type }} icon-circle"><i class="fas fa-{{ icon }} text-white"></i></div>'+
     '    </div>'+
     '    <div><span class="small text-gray-500"><b>{{ time }}</b></span>'+
-    '        <p class="medium">{{ content }}</p>'+
+    '        <p class="medium"><b>{{ title }}</b><br>{{ content }}</p>'+
     '    </div>'+
     '</a>';
 
@@ -28,15 +28,22 @@ function update_notification_list(popup = false){
                     var innerHTML = ""
                     if(typeof(response) != "object") { return }
                     for(notification of response){
-                        if(notification.seen == 1){ continue }
+                        if(notification.seen == 1){
+                            if(notificationsDisplayed[notification.notif_id] != undefined){
+                                delete notificationsDisplayed[notification.notif_id]
+                            }
+                            continue
+                        }
+
                         if(notificationsDisplayed[notification.notif_id] == undefined){
                             notificationsDisplayed[notification.notif_id] = notification
-                            if(popup){toastr[notification.type]("<b>Notification reçue</b><br>" + notification.content)}
+                            if(popup){toastr[notification.type]("<b>"+notification.title+"</b><br>" + notification.content)}
                         }
                     }
 
                     for(var i = Object.keys(notificationsDisplayed).length-1; i >= 0; i--){
                         var notification = notificationsDisplayed[Object.keys(notificationsDisplayed)[i]]
+                        if(notification == undefined){continue}
                         innerHTML += notificationItemTemplate
                             .replace(/{{ notif_id }}/gi, notification.notif_id)
                             .replace(/{{ link }}/gi, notification.link)
@@ -44,6 +51,7 @@ function update_notification_list(popup = false){
                             .replace(/{{ icon }}/gi, notification.icon)
                             .replace(/{{ time }}/gi, notification.created_at)
                             .replace(/{{ content }}/gi, notification.content)
+                            .replace(/{{ title }}/gi, notification.title)
                     }
                     
                     if(Object.keys(notificationsDisplayed).length == 0){

@@ -1,13 +1,9 @@
 var autorefresh_save = ''
 
-setInterval(function(){  
-    if(Swal.isVisible()) return  
+setInterval(function(){
     $.ajax({
         url: "/ajax" + document.location.pathname,
         type: "GET",
-        complete: function(){
-            Swal.close()
-        },
         statusCode: {
             200: function(response, status, xhr) {
                 if(response == autorefresh_save) return

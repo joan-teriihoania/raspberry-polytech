@@ -195,6 +195,15 @@ def toggleListeningAnimation():
     else: driverSpeaker.play("/home/jopro/raspberry-polytech/ressources/notif_listened.mp3", blocking=False)
     return listening
 
+def disableListeningAnimation():
+    global listening
+    listening = False
+
+def enableListeningAnimation():
+    global listening
+    listening = False
+
+
 # @Desc Edit the STABILIZED_THRESHOLD to the ambient sound level of estimated silence threshold
 # @Param:
 #   - frames (Array): An array of stream.read data collected

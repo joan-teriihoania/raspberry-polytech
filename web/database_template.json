@@ -19,6 +19,12 @@
             "not_null": true
         },
         {
+            "name": "title",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": true
+        },
+        {
             "name": "content",
             "type": "TEXT",
             "primary": false,

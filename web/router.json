@@ -56,6 +56,14 @@
 			"login": false,
 			"autorefresh": false
 		},
+		"/account/notification": {
+			"filename": "notifications",
+			"title": "Notifications",
+			"css": [],
+			"js": [],
+			"login": true,
+			"autorefresh": true
+		},
 		"/account/reset": {
 			"filename": "reset",
 			"title": "Réinitialisation du mot de passe",
@@ -104,11 +112,21 @@
 					"error": "String"
 				}
 			},
-			"/device/bind": {
-				"filename": "device_bind.js",
+			"/device/link": {
+				"filename": "device_link.js",
 				"login": true,
 				"description": "Lier un appareil de traduction au compte connecté via son code PIN",
 				"params":["pin_code"],
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
+			},
+			"/device/:device_id/unlink": {
+				"filename": "device_unlink.js",
+				"login": true,
+				"description": "Délier un appareil de traduction au compte connecté",
+				"params":[],
 				"return": {
 					"success": "JSON",
 					"error": "String"

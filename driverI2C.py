@@ -6,6 +6,7 @@ import sys
 import termios
 import tty
 import threading
+from RPLCD import CharLCD
 
 bus = smbus.SMBus(1)  # pour I2C-1 (0 pour I2C-0)
 
@@ -15,6 +16,14 @@ bus = smbus.SMBus(1)  # pour I2C-1 (0 pour I2C-0)
 DISPLAY_RGB_ADDR = 0x62
 DISPLAY_TEXT_ADDR = 0x3e
 a_red, a_green, a_blue = (0,0,0)
+lcd = CharLCD('PCF8574', 0x27)
+
+def set_cursor_pos(x, y):
+	lcd.cursor_pos = (x, y)
+
+def write(text):
+	lcd.write_string(text)
+
 
 
 # @Desc: Change the color from current (stored in a_{color}) to new bgcolors with fading animation

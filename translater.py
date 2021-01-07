@@ -14,21 +14,20 @@ import jz_translation_server
 # @Returns: The translated text
 # @Exception:
 #   UsageLimit: If the API has used the daily quota of translation assigned
-def translate(text, from_lang="fr", to_lang="it"):
+def translate(text, from_lang="fr", to_lang="en"):
     status, res = jz_translation_server.send_get("/device/:device_id:/translate", {
         "from_lang": from_lang,
         "to_lang": to_lang,
         "text": urllib.parse.quote(text)
     })
 
-    print(status, res)
     if(status == 200):
-        content = str(res.read().decode('UTF-8'))
+        content = str(res)
         content = json.loads(content)
-        return content['translation']
+        return status, content
     if(status == 402):
         core.terminate(1)
-        return
+        return status, res
 
     return status, res
 
@@ -43,4 +42,9 @@ def translate(text, from_lang="fr", to_lang="it"):
 #         translation = html.unescape(translation)
 #     return translation
 
-print(translate("bonjour tout le monde"))
+# for i in range(20):
+#     status, data = translate("bonjour tout le monde")
+#     if(status == 200):
+#         print(data)
+#     else:
+#         print('An error occured : ' + str(data))

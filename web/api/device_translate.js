@@ -32,6 +32,7 @@ module.exports = {
                                     {
                                         "user_id": users[0].user_id,
                                         "type": "warning",
+                                        "title": "Quota atteint",
                                         "content": "Vous avez atteint votre quota de traduction mensuel",
                                         "link": "#",
                                         "icon": "chart-line"

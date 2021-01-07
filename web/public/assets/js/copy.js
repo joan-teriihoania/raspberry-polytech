@@ -13,7 +13,6 @@ function copy(text) {
   
     try {
         var successful = document.execCommand('copy');
-        var msg = successful ? 'successful' : 'unsuccessful';
         toastr.info('Texte copié dans le presse-papier !')
     } catch (err) {
         console.error('Fallback: Oops, unable to copy', err);

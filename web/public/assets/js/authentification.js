@@ -4,9 +4,9 @@ var authChecker = setInterval(function(){
     }
 
     ajax_authChecker(function(response, status, xhr){
-        if(!response.is_auth){
+        if(response['is_auth'] != undefined && !response['is_auth']){
             setTimeout(ajax_authChecker(function(response, status, xhr){
-                if(!response.is_auth){
+                if(response['is_auth'] != undefined && !response['is_auth']){
                     stop_authChecker()
                     Swal.fire({
                         icon: "warning",

@@ -39,7 +39,7 @@ server.all('*', function(req, res, next){
 
     if(loggerRequest[res.ip] > process.env.MAX_REQUEST_PER_SECOND){
         res.status(429)
-        res.send("Too many requests")
+        res.end("Too many requests")
         return
     }
 

@@ -5,7 +5,7 @@ const {database} = require('../../server')
 
 module.exports = {
     format: function(content, req, res, ressources, callback){
-        var cols = ['#', 'Traductions (mois)', 'Traductions (total)', 'Statut', 'Actions']
+        var cols = ['#', 'Traductions (mois)', 'Traductions (total)', 'Dernière activité', 'Actions']
         var colsString = ""
         for(col of cols){
             colsString += '<th>'+col+'</th>'
@@ -19,7 +19,7 @@ module.exports = {
                 for(var device of devices){
                     var getRow = (device) => {
                         return new Promise(function(resolve, reject){
-                            db.select(database, 'SELECT * FROM translations WHERE device_id = ' + device.device_id, function(translations){
+                            db.select(database, 'SELECT * FROM translations WHERE device_id = ' + device.device_id + " ORDER BY translation_id DESC", function(translations){
                                 if(translations){
                                     var translations_month = 0
                                     var nowDate = new Date()
@@ -34,7 +34,9 @@ module.exports = {
                                         device.device_id,
                                         translations_month,
                                         translations.length,
-                                        '<span class="badge badge-success">Connecté</span>'
+                                        translations.length > 0 ? translations[0].translated_at : "Aucune activité",
+                                        '<a href="/account/device/'+device.device_id+'" class="btn btn-primary btn-sm">Configurer</a>' +
+                                        '\n<a class="btn btn-danger btn-sm" onclick="unlink_device('+device.device_id+')">Supprimer</a>'
                                     ])
                                     resolve()
                                 }
@@ -50,7 +52,7 @@ module.exports = {
                     for(row of rows){
                         rowsString += "<tr>"
                         for(i of row){
-                            rowsString += "<td style='cursor: grab'>"+i+"</td>"
+                            rowsString += "<td>"+i+"</td>"
                         }
                         rowsString += "</tr>"
                     }

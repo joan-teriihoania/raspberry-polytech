@@ -1,6 +1,6 @@
 module.exports = {
     exec: function(req, res){
-        res.cookie("JZ-Translation-auth", "")
-        res.redirect('/')
+        res.status(500)
+        res.end('Not implemented yet')
     }
 }

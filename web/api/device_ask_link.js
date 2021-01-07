@@ -15,10 +15,11 @@ module.exports = {
             ]).then((lastIDs) => {
                 db.select(database, 'SELECT * FROM devices WHERE device_id = ' + lastIDs[0], function(devices){
                     if(devices && devices.length > 0){
-                        db.run(database, 'UPDATE devices SET pin_code = "' + devices[0].device_id + devices[0].pin_code + '" WHERE device_id = ' + devices[0].device_id)
-                        db.select(database, 'SELECT * FROM devices WHERE device_id = ' + lastIDs[0], function(devices){
-                            res.status(200)
-                            res.send(devices[0])
+                        db.run(database, 'UPDATE devices SET pin_code = "' + devices[0].device_id + devices[0].pin_code + '" WHERE device_id = ' + devices[0].device_id).then(() => {
+                            db.select(database, 'SELECT * FROM devices WHERE device_id = ' + lastIDs[0], function(devices){
+                                res.status(200)
+                                res.send(devices[0])
+                            })
                         })
                     } else {
                         res.status(500)

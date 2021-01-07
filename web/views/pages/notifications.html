@@ -4,13 +4,8 @@
     <div class="card shadow" id="devices-list">
         <div class="card-header py-3">
             <div class="row">
-                <div class="col-md-6 text-nowrap">
+                <div class="col text-nowrap">
                     <p class="m-0 font-weight-bold">Informations</p>
-                </div>
-                <div class="col-md-6">
-                    <div class="text-md-right">
-                        <a href="javascript:link_device()" class="btn btn-primary btn-sm">Ajouter un appareil</a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -23,11 +18,11 @@
                     <div class="text-md-right dataTables_filter" id="dataTable_filter"><label><input type="search" class="form-control form-control-sm" aria-controls="dataTable" placeholder="Search"></label></div>
                 </div>
             </div>-->
-            <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
+            <div class="table-responsive table mt-2 table-hover" id="dataTable" role="grid" aria-describedby="dataTable_info">
                 <table class="table my-0" id="dataTable">
                     <thead>
                         <tr>
-                            {{ devices_columns }}
+                            {{ notifications_columns }}
                         </tr>
                     </thead>
                     <tbody>
@@ -39,7 +34,7 @@
                             <td>2008/11/28</td>
                             <td>$162,700</td>
                         </tr>-->
-                        {{ devices_rows }}
+                        {{ notifications_rows }}
                     </tbody>
                 </table>
             </div>
