@@ -1,7 +1,7 @@
-if [ "$1" = "force" ] then
+if [ "$1" = "force" ]; then
     sudo pkill -f raspberry-polytech
     sudo python3.7 /home/jopro/raspberry-polytech/main.py
-    exit 0
+    exit
 fi
 
 FILE=/home/jopro/raspberry-polytech/ressources/tmp_active_check
