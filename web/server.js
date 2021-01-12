@@ -84,16 +84,16 @@ server.all('*', function(req, res, next){
                 }
             }
 
+            if(req.body.auth_key != process.env.SECRET_KEY && req.query.auth_key != process.env.SECRET_KEY && !res.user.is_auth && api_info.login){
+                res.status(401)
+                res.end("Echec d'authentification : Vous devez être connecté pour accéder à cette page ou faire cette action.")
+                return
+            }
+
             if(api_info.admin && req.body.auth_key != process.env.SECRET_KEY && req.query.auth_key != process.env.SECRET_KEY){
                 res.status(401)
                 res.end("L'accès à cet API est réservé aux administrateurs")
                 return
-            } else {
-                if(!res.user.is_auth && api_info.login){
-                    res.status(401)
-                    res.end("Echec d'authentification : Vous devez être connecté pour accéder à cette page ou faire cette action.")
-                    return
-                }
             }
         }
 
