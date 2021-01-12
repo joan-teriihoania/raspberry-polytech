@@ -10,7 +10,9 @@ module.exports = {
                 {
                     "user_id": -1,
                     "pin_code": generateAuthKey(5),
-                    "linked": "false"
+                    "linked": "false",
+                    "from_lang": "",
+                    "to_lang": ""
                 }
             ]).then((lastIDs) => {
                 db.select(database, 'SELECT * FROM devices WHERE device_id = ' + lastIDs[0], function(devices){

@@ -1,36 +1,45 @@
 function configure_device(device_id){
-    Swal.fire({
-        title: "Changer la langue",
-        html: "Assurez-vous que votre appareil est allumé et en ligne avant de reconfigurer les langues !<br><br><b>Entrez la langue source:</b>",
+    Swal.mixin({
         input: 'text',
+        confirmButtonText: 'Suivant &rarr;',
         showCancelButton: true,
-        inputValidator: (value) => {
-            if (!value) {
-                return 'Vous n\'avez pas spécifié de langue source'
-            }
+        progressSteps: ['1', '2', '3']
+      }).queue([
+        {
+          title: 'Langue source',
+          text: 'Assurez-vous que votre appareil est allumé et en ligne avant de reconfigurer les langues !'
+        },
+        {
+          title: 'Langue destination',
+          text: 'Assurez-vous que votre appareil est allumé et en ligne avant de reconfigurer les langues !'
+        }
+      ]).then((result) => {
+        if (result.value) {
+            const answers = JSON.stringify(result.value)
+          
 
             Swal.fire({
-                title: "Ajouter un appareil",
-                html: "Vérification en cours..."
+                title: "Changer de langue",
+                text: "Configuration en cours..."
             })
             Swal.showLoading()
-          
+            
             $.ajax({
-                url: "/api/v1/device/link",
+                url: "/api/v1/device/" + device_id + "/config",
                 type: "POST",
-                data: "pin_code=" + value,
+                data: "from_lang=" + answers[0] + "&to_lang=" + answers[1],
                 complete: function(){
                     Swal.close()
                 },
                 statusCode: {
                     200: function(response, status, xhr) {
-                        toastr.success('Nouvel appareil ajouté avec succès !')
+                        toastr.success('Configuration mise à jour !')
                     }
                 },
                 error: function(xhr, status, err){
-                    toastr.error("<b>Echec de l'ajout</b><br>" + (xhr.responseText ? xhr.responseText : "Une erreur inconnue s'est produite"))
+                    toastr.error("<b>Echec de configuration</b><br>" + (xhr.responseText ? xhr.responseText : "Une erreur inconnue s'est produite"))
                 }
             });
         }
-    })
+      })
 }
