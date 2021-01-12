@@ -11,6 +11,9 @@ module.exports = {
                     db.run(database, 'UPDATE devices SET from_lang = "'+req.body.from_lang+'", to_lang = "'+req.body.to_lang+'" WHERE device_id = ' + devices[0].device_id).then(() => {
                         res.status(200)
                         res.send("OK")
+                    }).catch(() => {
+                        res.status(500)
+                        res.send("Mise à jour échouée")
                     })
                 } else {
                     res.status(400)
