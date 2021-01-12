@@ -12,6 +12,7 @@ import driverSpeaker
 import mainMenu
 import jz_translation_server
 import driverMicro
+import menuHandler
 import time
 import config
 
@@ -228,7 +229,8 @@ def webConfig():
             if("from_lang" in content and "to_lang" in content):
                 config.setConfig('from_lang', content['from_lang'])
                 config.setConfig('to_lang', content['to_lang'])
-        time.sleep(10)
+                menuHandler.refresh = True
+        time.sleep(5)
 
 t_webconfig = threading.Thread(target=webConfig)
 t_webconfig.start()

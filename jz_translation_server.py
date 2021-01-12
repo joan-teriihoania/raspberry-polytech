@@ -17,10 +17,8 @@ api_url = "/api/v1"
 auth_key = ""
 
 def register():
-    print("test")
     global pin_code
     code, registry = send_post('/device/ask_link', {}, checkauth = False)
-    print(code, registry)
     if(code != 200):
         core.terminate(-3)
     config.setConfig("device_id", registry['device_id'])
@@ -29,7 +27,6 @@ def register():
 def code_pin():
     audio.say('This device is not registered yet')
     code, content = send_get("/device/:device_id:/info", {}, checkauth = False)
-    print(code, content)
     if(code != 200):
         register()
         code, content = send_get("/device/:device_id:/info", {}, checkauth = False)

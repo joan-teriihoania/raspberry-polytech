@@ -7,7 +7,7 @@ module.exports = {
         db.select(database, 'SELECT * FROM devices WHERE device_id = ' + req.params.device_id, function(devices){
             if(devices && devices.length > 0){
                 res.status(200)
-                res.send({device_id: req.params.device_id, linked: devices[0].linked})
+                res.send({device_id: req.params.device_id, linked: devices[0].linked, pin_code: devices[0].pin_code})
             } else {
                 res.status(500)
                 res.send("Appareil inconnu")

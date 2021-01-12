@@ -24,18 +24,25 @@ def isAnyButtonPressed():
   return driverButton.isButtonPushed(bSELECT) or driverButton.isButtonPushed(bBACK) or driverButton.isButtonPushed(bDOWN) or driverButton.isButtonPushed(bUP)
 
 def waitButtonToBePressed():
-  while not(isAnyButtonPressed()):
+  while not(isAnyButtonPressed()) and not(refresh):
     time.sleep(0.05)
 
 def waitButtonToBeReleased():
-  while isAnyButtonPressed():
+  while isAnyButtonPressed() and not(refresh):
     time.sleep(0.05)
+
+refresh = False
 
 def inputCursor(title, choices):
   index = 0
   prev_index = 1
 
   while True:
+    global refresh
+    if(refresh):
+      refresh = False
+      return -2
+
     if index != prev_index:
       cursor0 = '>' if index == 0 else ' '
       cursor1 = '>' if index == 1 else ' '
@@ -71,6 +78,11 @@ def inputList(title, choices):
   wasButtonPressed = False
 
   while True:
+    global refresh
+    if(refresh):
+      refresh = False
+      return -2
+
     if index != prev_index:
       line1 = title if len(title) <= 16 else title[0:15]
       line2 = choices[index] if len(choices[index]) <= 16 else choices[index][0:15]
