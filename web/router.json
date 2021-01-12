@@ -32,14 +32,6 @@
 			"login": true,
 			"autorefresh": true
 		},
-		"/account/device/:device_id": {
-			"filename": "device",
-			"title": "Configuration",
-			"css": [],
-			"js": [],
-			"login": true,
-			"autorefresh": true
-		},
 		"/login": {
 			"filename": "login",
 			"title": "Connexion",
@@ -122,6 +114,16 @@
 					"error": "String"
 				}
 			},
+			"/device/:device_id/config": {
+				"filename": "device_set_config.js",
+				"login": true,
+				"admin": false,
+				"description": "Génère demande de reconfiguration que l'appareil viendra récupéré s'il est en ligne",
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
+			},
 			"/device/:device_id/unlink": {
 				"filename": "device_unlink.js",
 				"login": true,
@@ -159,6 +161,16 @@
 				"login": false,
 				"admin": true,
 				"description": "Les informations sur l'appareil de traduction souhaité",
+				"return": {
+					"success": "JSON",
+					"error": "String"
+				}
+			},
+			"/device/:device_id/config": {
+				"filename": "device_config.js",
+				"login": false,
+				"admin": true,
+				"description": "Présente une demande de reconfiguration que l'appareil viendra récupéré s'il est en ligne",
 				"return": {
 					"success": "JSON",
 					"error": "String"

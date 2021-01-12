@@ -173,6 +173,18 @@
             "type": "BOOLEAN DEFAULT 0",
             "primary": false,
             "not_null": true
+        },
+        {
+            "name": "from_lang",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "to_lang",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": true
         }
     ],
     "translations":[

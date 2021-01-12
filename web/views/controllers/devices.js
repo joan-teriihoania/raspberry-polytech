@@ -35,7 +35,7 @@ module.exports = {
                                         translations_month,
                                         translations.length,
                                         translations.length > 0 ? translations[0].translated_at : "Aucune activité",
-                                        '<a href="/account/device/'+device.device_id+'" class="btn btn-primary btn-sm">Configurer</a>' +
+                                        '<a onclick="configure_device('+device.device_id+')" class="btn btn-primary btn-sm">Configurer</a>' +
                                         '\n<a class="btn btn-danger btn-sm" onclick="unlink_device('+device.device_id+')">Supprimer</a>'
                                     ])
                                     resolve()
