@@ -2,22 +2,17 @@ function configure_device(device_id){
     Swal.mixin({
         input: 'select',
         inputOptions: {
-          'Fruits': {
-            apples: 'Apples',
-            bananas: 'Bananas',
-            grapes: 'Grapes',
-            oranges: 'Oranges'
-          },
-          'Vegetables': {
-            potato: 'Potato',
-            broccoli: 'Broccoli',
-            carrot: 'Carrot'
-          },
-          'icecream': 'Ice cream'
+            'Sélectionner la langue': {
+                "es": "Español",
+                "fr": "Français",
+                "en": "English",
+                "zh-CN": "中文",
+                "it": "Italiano"
+            }
         },
         confirmButtonText: 'Suivant &rarr;',
         showCancelButton: true,
-        progressSteps: ['Source', 'Destination']
+        progressSteps: ['1', '2']
       }).queue([
         {
           title: 'Langue source',
