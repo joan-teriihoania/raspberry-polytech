@@ -40,7 +40,7 @@ exitCodes = {
     0: "Good bye!",
     -1: "An unexpected error occured during execution that caused a system crash",
     -2: "I encountered an issue with your microphone, try rebooting. If this does not resolve your problem, get your device checked in the nearest repair shop available",
-    -3: "I cannot reach the translation service"
+    -3: "I cannot use the translation service"
 }
 
 
@@ -65,7 +65,6 @@ waitTriggerWords = True
 # @Return : if an error occured (to let main loop handle it)
 ############################
 def main(waitTriggerWords=True):
-    
     trad_status, trad = translater.translate("Translate", from_lang="en", to_lang="en")
     if trad_status != 200:
         core.terminate(-3)

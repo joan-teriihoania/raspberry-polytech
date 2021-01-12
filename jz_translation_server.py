@@ -22,7 +22,6 @@ def register():
     if(code != 200):
         core.terminate(-3)
     config.setConfig("device_id", registry['device_id'])
-    pin_code = registry['pin_code']
 
 def code_pin():
     audio.say('This device is not registered yet')
@@ -33,8 +32,8 @@ def code_pin():
 
     if(code == 200):
         while(content['device_id'] == str(config.getConfig()['device_id']) and content['linked'] == "false"):
-            driverI2C.display('Code PIN:\n' + pin_code)
             _, content = send_get("/device/:device_id:/info", {}, checkauth = False)
+            driverI2C.display('Code PIN:\n' + content['pin_code'])
             time.sleep(1)
     return
 
