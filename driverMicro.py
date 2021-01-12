@@ -8,6 +8,7 @@ import threading
 import translater
 
 import os
+import config
 import pyaudio
 import audio
 import core
@@ -38,7 +39,7 @@ c_error_handler = ERROR_HANDLER_FUNC(py_error_handler)
 asound = cdll.LoadLibrary('libasound.so')
 
 asound.snd_lib_error_set_handler(c_error_handler)
-p = pyaudio.PyAudio()
+p = pyaudio.PyAudio() # ici
 asound.snd_lib_error_set_handler(None)
 
 
@@ -195,6 +196,15 @@ def toggleListeningAnimation():
     else: driverSpeaker.play("/home/jopro/raspberry-polytech/ressources/notif_listened.mp3", blocking=False)
     return listening
 
+def disableListeningAnimation():
+    global listening
+    listening = False
+
+def enableListeningAnimation():
+    global listening
+    listening = False
+
+
 # @Desc Edit the STABILIZED_THRESHOLD to the ambient sound level of estimated silence threshold
 # @Param:
 #   - frames (Array): An array of stream.read data collected
@@ -219,7 +229,7 @@ def _stabilize_threshold(frames):
             snd_min = snd_lvl
     
     if(snd_max == 0): return
-    targetThreshold = min(max(int(snd_max*2), 200), 500)
+    targetThreshold = min(max(int(snd_max*2), THRESHOLD), 500)
     if((snd_max - snd_min) <= 100 and targetThreshold != STABILIZED_THRESHOLD):
         # Sound is stable and steady and considered silent
         soundBarMax = STABILIZED_THRESHOLD*3
@@ -381,14 +391,19 @@ def _record_to_file(path, waitNSecondSilence=2):
 #   - triggerWords (String): The trigger words that will start a recording
 #   - from_lang (String): The language from which the user is speaking
 # @Return If the output file has been generated or not
-def listen(filepath='/home/jopro/raspberry-polytech/ressources/microphone_input.wav', waitTriggerWords=True, triggerWords="Listen", from_lang="en"):
+def listen(filepath='/home/jopro/raspberry-polytech/ressources/microphone_input.wav', waitTriggerWords=True, triggerWords="Translate"):
     if(core.fileExists(filepath)):
         os.unlink(filepath)
 
     if(waitTriggerWords):
-        #triggerWords = translater.translate(triggerWords, to_lang=from_lang)
-        driverI2C.display("Say \"" + triggerWords + "\"")
+        from_lang = config.getConfig()['from_lang']
+        save_lang = from_lang
+        _, triggerWords = translater.translate(triggerWords, from_lang="en", to_lang=from_lang)
         while True:
+            from_lang = config.getConfig()['from_lang']
+            if(save_lang != from_lang):
+                _, triggerWords = translater.translate(triggerWords, from_lang="en", to_lang=from_lang)
+            driverI2C.display("Say \"" + triggerWords + "\"")
             _record_to_file(filepath, waitNSecondSilence=1)
             trad = audio.speechToText(filepath, from_lang)
             if(trad != False and trad.lower() == triggerWords.lower()):

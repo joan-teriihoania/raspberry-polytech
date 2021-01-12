@@ -182,10 +182,14 @@ def clearText():
 # @Note: Used to centralize input to edit its behavior
 # @Params:
 #	- color: String of a color listed in setColorList or an hexadecimal color
+save_display = ""
 def display(texte, instant=False, color=None):
-	setText(texte, instant)
-	if(color != None):
-		setColor(color)
+	global save_display
+	if(texte != save_display):
+		save_display = texte
+		setText(texte, instant)
+		if(color != None):
+			setColor(color)
 
 # Experimental function
 def setLongText1(texte):

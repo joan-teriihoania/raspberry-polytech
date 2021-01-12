@@ -10,6 +10,7 @@ import driverButton
 import driverSpeaker
 import driverMicro
 import time
+import config
 
 ############################
 # VOICE COMMANDS
@@ -34,6 +35,7 @@ exitCodes = {
     0: "Good bye!",
     -1: "An unexpected error occured during execution that caused a system crash",
     -2: "I encountered an issue with your microphone, try rebooting. If this does not resolve your problem, get your device checked in the nearest repair shop available",
+    -3: "The translation service is momentarily unavailable"
 }
 
 
@@ -56,7 +58,10 @@ waitTriggerWords = True
 #
 # @Return : if an error occured (to let main loop handle it)
 ############################
-def main(waitTriggerWords=True, from_lang='en', to_lang='it'):
+def main(waitTriggerWords=True):
+    from_lang = config.getConfig()['from_lang']
+    to_lang = config.getConfig()['to_lang']
+    global triggerWords
     # TODO: I'm sorry I did not understand MAX 3 FOIS
     # TODO: fichier config avec langues préférées
     # TODO: System logs (JOAN)
@@ -77,10 +82,11 @@ def main(waitTriggerWords=True, from_lang='en', to_lang='it'):
     #core.overecho("Waiting for button to be pressed..." + core.done)
 
     # Listen for sound in microphone, record and save in "/home/jopro/raspberry-polytech/ressources/microphone_input.wav"
+
     if not(driverMicro.listen(
         waitTriggerWords=waitTriggerWords,
-        triggerWords=translater.translate(triggerWords, from_lang="en", to_lang=from_lang),
-        from_lang=from_lang)
+        triggerWords=triggerWords
+        )
     ):
         core.echo("An error occured during the record", "ERROR")
         return False
@@ -101,8 +107,8 @@ def main(waitTriggerWords=True, from_lang='en', to_lang='it'):
 
     # Translate to the specified language from the given language
     driverI2C.display("Translating...")
-    trad = translater.translate(text, from_lang=from_lang, to_lang=to_lang)
-    if trad == None:
+    trad_status, trad = translater.translate(text, from_lang=from_lang, to_lang=to_lang)
+    if trad_status != 200:
         core.echo("An error occured during translation", "ERROR")
         return False
 

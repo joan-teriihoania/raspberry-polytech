@@ -1,0 +1,19 @@
+
+<div class="container-fluid">
+    <h3 class="text-dark mb-4">{{ page_title }}</h3>
+    <div class="card shadow" id="devices-list">
+        <div class="card-header">
+            <div class="row mt-3">
+                <div class="col">
+                    <p>
+                        Voici des informations sur l'API, les méthodes ainsi que les liens vers ces derniers avec une description de ce qu'ils vous permettent et vous retournent.
+                        Les API qui requièrent une authentification utilisateur sont indiqués par une icône (<i class="fas fa-lock"></i>).
+                        Vous pouvez vous connecter via un navigateur ou renseigner en paramètre de la requête votre clé d'authentification (<code>auth_key</code>) disponible
+                        dans votre profil en paramètre utilisateur.
+                    </p>
+                </div>
+            </div>
+        </div>
+            {{ api_rows }}
+    </div>
+</div>

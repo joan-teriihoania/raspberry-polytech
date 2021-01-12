@@ -1,0 +1,216 @@
+{
+    "notifications": [
+        {
+            "name": "notif_id",
+            "type": "INTEGER",
+            "primary": true,
+            "not_null": false
+        },
+        {
+            "name": "user_id",
+            "type": "INTEGER",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "type",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "title",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "content",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "created_at",
+            "type": "DATETIME DEFAULT CURRENT_TIMESTAMP",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "seen",
+            "type": "BOOLEAN DEFAULT 0",
+            "primary": false,
+            "not_null": false
+        },
+        {
+            "name": "link",
+            "type": "TEXT DEFAULT '#'",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "icon",
+            "type": "TEXT DEFAULT 'icons'",
+            "primary": false,
+            "not_null": true
+        }
+    ],
+    "messages": [
+        {
+            "name": "message_id",
+            "type": "INTEGER",
+            "primary": true,
+            "not_null": false
+        },
+        {
+            "name": "sender_user_id",
+            "type": "INTEGER",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "recipient_user_id",
+            "type": "INTEGER",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "content",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "sent_at",
+            "type": "DATETIME DEFAULT CURRENT_TIMESTAMP",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "seen",
+            "type": "BOOLEAN DEFAULT 0",
+            "primary": false,
+            "not_null": false
+        }
+    ],
+    "users":[
+        {
+            "name": "user_id",
+            "type": "INTEGER",
+            "primary": true,
+            "not_null": false
+        },
+        {
+            "name": "username",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "email",
+            "type": "TEXT UNIQUE",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "password",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "img_profile",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": false
+        },
+        {
+            "name": "level",
+            "type": "INTEGER",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "auth_google",
+            "type": "BOOLEAN DEFAULT 0",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "auth_key",
+            "type": "TEXT UNIQUE",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "quota",
+            "type": "INTEGER DEFAULT 10",
+            "primary": false,
+            "not_null": true
+        }
+    ],
+    "devices":[
+        {
+            "name": "device_id",
+            "type": "INTEGER",
+            "primary": true,
+            "not_null": false
+        },
+        {
+            "name": "user_id",
+            "type": "INTEGER",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "pin_code",
+            "type": "TEXT UNIQUE",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "linked",
+            "type": "BOOLEAN DEFAULT 0",
+            "primary": false,
+            "not_null": true
+        }
+    ],
+    "translations":[
+        {
+            "name": "translation_id",
+            "type": "INTEGER",
+            "primary": true,
+            "not_null": false
+        },
+        {
+            "name": "from_lang",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "to_lang",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "text",
+            "type": "TEXT",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "translated_at",
+            "type": "DATETIME DEFAULT CURRENT_TIMESTAMP",
+            "primary": false,
+            "not_null": true
+        },
+        {
+            "name": "device_id",
+            "type": "INTEGER",
+            "primary": false,
+            "not_null": false
+        }
+    ]
+}
