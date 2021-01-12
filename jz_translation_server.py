@@ -4,7 +4,7 @@ import time
 
 secret_key = "VqdjGXcUAXZ7DqKXTjtYVXVxk22t4Sba"
 base_url = "https://raspberry-polytech.joanteriihoania.repl.co"
-base_url = "http://localhost:3000"
+#base_url = "http://localhost:3000"
 device_id = 1
 api_url = "/api/v1"
 auth_key = ""
