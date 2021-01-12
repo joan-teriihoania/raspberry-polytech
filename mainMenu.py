@@ -12,8 +12,8 @@ LANGUAGES = {
 }
 
 #PIN BUTTONS
-bDOWN = 2
-bUP = 3
+bDOWN = 3
+#bUP = 4
 bSELECT = 7
 bBACK = 8
 
@@ -27,20 +27,17 @@ while True:
   selected = menuHandler.input(
     'Menu principal',
     [
-      "Source: " + list(LANGUAGES.values())[src],
-      "Destin: " + list(LANGUAGES.values())[dest]
+      "SRC : " + list(LANGUAGES.values())[src],
+      "DEST: " + list(LANGUAGES.values())[dest]
     ]
   )
 
-  if(selected == -1):
-    pass
-    # lance mode ecoute passive
-
-  if(selected == 0):
-    temp = menuHandler.input('Sélection source', list(LANGUAGES.values()))
-    if temp != -1:
-      src = temp
-  if(selected == 1):
-    temp = menuHandler.input('Sélection destin', list(LANGUAGES.values()))
-    if temp != -1:
-      src = temp
+  if(selected != -1):
+    if(selected == 0):
+      temp = menuHandler.input('Selection source', list(LANGUAGES.values()))
+      if temp != -1:
+        src = temp
+    if(selected == 1):
+      temp = menuHandler.input('Selection destin', list(LANGUAGES.values()))
+      if temp != -1:
+        dest = temp
