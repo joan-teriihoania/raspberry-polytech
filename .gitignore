@@ -1,1 +1,4 @@
 __pycache__/* 
+web/node_modules/*
+web/.env
+web/database.sqlite3

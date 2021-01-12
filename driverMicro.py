@@ -38,7 +38,7 @@ c_error_handler = ERROR_HANDLER_FUNC(py_error_handler)
 asound = cdll.LoadLibrary('libasound.so')
 
 asound.snd_lib_error_set_handler(c_error_handler)
-p = pyaudio.PyAudio()
+p = pyaudio.PyAudio() # ici
 asound.snd_lib_error_set_handler(None)
 
 
@@ -194,6 +194,15 @@ def toggleListeningAnimation():
     if(listening): driverSpeaker.play("/home/jopro/raspberry-polytech/ressources/notif_listening.mp3", blocking=False)
     else: driverSpeaker.play("/home/jopro/raspberry-polytech/ressources/notif_listened.mp3", blocking=False)
     return listening
+
+def disableListeningAnimation():
+    global listening
+    listening = False
+
+def enableListeningAnimation():
+    global listening
+    listening = False
+
 
 # @Desc Edit the STABILIZED_THRESHOLD to the ambient sound level of estimated silence threshold
 # @Param:
