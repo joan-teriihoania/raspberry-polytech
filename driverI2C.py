@@ -6,6 +6,8 @@ import sys
 import termios
 import tty
 import threading
+from RPLCD.i2c import CharLCD
+import RPi.GPIO as GPIO
 
 bus = smbus.SMBus(1)  # pour I2C-1 (0 pour I2C-0)
 
@@ -15,6 +17,17 @@ bus = smbus.SMBus(1)  # pour I2C-1 (0 pour I2C-0)
 DISPLAY_RGB_ADDR = 0x62
 DISPLAY_TEXT_ADDR = 0x3e
 a_red, a_green, a_blue = (0,0,0)
+lcd = CharLCD('MCP23008', DISPLAY_TEXT_ADDR)
+
+def set_cursor_pos(x, y):
+	lcd.cursor_pos = (x, y)
+
+def write(text):
+	lcd.write_string(text.encode('utf-8'))
+
+def clear():
+  lcd.clear()
+
 
 
 # @Desc: Change the color from current (stored in a_{color}) to new bgcolors with fading animation
@@ -145,7 +158,7 @@ def setText(texte, instant=False):
 	length = 0
 
 	if len(texte) > windowSize * windowLines:
-		return
+		texte = texte[0:15]
 
 	for char in texte:
 		if char == '\n':
