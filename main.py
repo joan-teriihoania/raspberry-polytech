@@ -10,6 +10,7 @@ import driverButton
 import driverSpeaker
 import driverMicro
 import time
+import config
 
 ############################
 # VOICE COMMANDS
@@ -57,7 +58,9 @@ waitTriggerWords = True
 #
 # @Return : if an error occured (to let main loop handle it)
 ############################
-def main(waitTriggerWords=True, from_lang='en', to_lang='it'):
+def main(waitTriggerWords=True):
+    from_lang = config.getConfig()['from_lang']
+    to_lang = config.getConfig()['to_lang']
     global triggerWords
     # TODO: I'm sorry I did not understand MAX 3 FOIS
     # TODO: fichier config avec langues préférées
@@ -79,14 +82,11 @@ def main(waitTriggerWords=True, from_lang='en', to_lang='it'):
     #core.overecho("Waiting for button to be pressed..." + core.done)
 
     # Listen for sound in microphone, record and save in "/home/jopro/raspberry-polytech/ressources/microphone_input.wav"
-    trad_status, triggerWords = translater.translate(triggerWords, from_lang=systemLanguage, to_lang=from_lang)
-    if trad_status != 200:
-        core.terminate(-3)
 
     if not(driverMicro.listen(
         waitTriggerWords=waitTriggerWords,
-        triggerWords=triggerWords,
-        from_lang=from_lang)
+        triggerWords=triggerWords
+        )
     ):
         core.echo("An error occured during the record", "ERROR")
         return False

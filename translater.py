@@ -18,13 +18,11 @@ def translate(text, from_lang="fr", to_lang="en"):
     status, res = jz_translation_server.send_get("/device/:device_id:/translate", {
         "from_lang": from_lang,
         "to_lang": to_lang,
-        "text": urllib.parse.quote(text)
+        "text": text
     })
 
     if(status == 200):
-        content = str(res)
-        content = json.loads(content)
-        return status, content
+        return status, res['translation']
     if(status != 200):
         core.echo("[HTTP]["+str(status)+"] " + str(res), "ERROR")
     if(status == 402):
