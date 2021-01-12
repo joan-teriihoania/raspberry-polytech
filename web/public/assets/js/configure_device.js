@@ -24,7 +24,6 @@ function configure_device(device_id){
         }
       ]).then((result) => {
         if (result.value) {
-            const answers = JSON.stringify(result.value)
           
 
             Swal.fire({
@@ -32,11 +31,11 @@ function configure_device(device_id){
                 text: "Configuration en cours..."
             })
             Swal.showLoading()
-            
+            console.log(result.value)
             $.ajax({
                 url: "/api/v1/device/" + device_id + "/config",
                 type: "POST",
-                data: "from_lang=" + answers[0] + "&to_lang=" + answers[1],
+                data: "from_lang=" + result.value[0] + "&to_lang=" + result.value[1],
                 complete: function(){
                     Swal.close()
                 },
