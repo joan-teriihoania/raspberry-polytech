@@ -10,7 +10,7 @@ module.exports = {
                 res.send({device_id: req.params.device_id, linked: devices[0].linked})
             } else {
                 res.status(500)
-                res.send("Identifiant d'appareil inconnu")
+                res.send("Appareil inconnu")
             }
         })
     }

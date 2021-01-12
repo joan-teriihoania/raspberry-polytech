@@ -25,9 +25,10 @@ def translate(text, from_lang="fr", to_lang="en"):
         content = str(res)
         content = json.loads(content)
         return status, content
+    if(status != 200):
+        core.echo("[HTTP]["+str(status)+"] " + str(res), "ERROR")
     if(status == 402):
         core.terminate(1)
-        return status, res
 
     return status, res
 

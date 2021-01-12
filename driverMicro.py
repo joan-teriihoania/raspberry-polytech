@@ -390,7 +390,7 @@ def _record_to_file(path, waitNSecondSilence=2):
 #   - triggerWords (String): The trigger words that will start a recording
 #   - from_lang (String): The language from which the user is speaking
 # @Return If the output file has been generated or not
-def listen(filepath='/home/jopro/raspberry-polytech/ressources/microphone_input.wav', waitTriggerWords=True, triggerWords="Listen", from_lang="en"):
+def listen(filepath='/home/jopro/raspberry-polytech/ressources/microphone_input.wav', waitTriggerWords=True, triggerWords="Translate", from_lang="en"):
     if(core.fileExists(filepath)):
         os.unlink(filepath)
 

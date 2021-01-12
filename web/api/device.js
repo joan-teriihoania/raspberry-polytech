@@ -16,7 +16,7 @@ module.exports = {
                     })
                 } else {
                     res.status(400)
-                    res.send("ID d'appareil inconnu")
+                    res.send("Appareil inconnu")
                 }
             })
         } else {

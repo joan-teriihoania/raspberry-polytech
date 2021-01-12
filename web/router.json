@@ -154,7 +154,7 @@
 			}
 		},
 		"GET": {
-			"/device/:device_id": {
+			"/device_info/:device_id": {
 				"filename": "device_info.js",
 				"login": false,
 				"admin": true,
