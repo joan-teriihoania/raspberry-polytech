@@ -1,9 +1,23 @@
 function configure_device(device_id){
     Swal.mixin({
-        input: 'text',
+        input: 'select',
+        inputOptions: {
+          'Fruits': {
+            apples: 'Apples',
+            bananas: 'Bananas',
+            grapes: 'Grapes',
+            oranges: 'Oranges'
+          },
+          'Vegetables': {
+            potato: 'Potato',
+            broccoli: 'Broccoli',
+            carrot: 'Carrot'
+          },
+          'icecream': 'Ice cream'
+        },
         confirmButtonText: 'Suivant &rarr;',
         showCancelButton: true,
-        progressSteps: ['1', '2', '3']
+        progressSteps: ['Source', 'Destination']
       }).queue([
         {
           title: 'Langue source',
