@@ -27,15 +27,15 @@ def register():
 
 def code_pin():
     audio.say('This device is not registered yet')
-    code, content = send_get("/device_info/:device_id:", {}, checkauth = False)
+    code, content = send_get("/device/:device_id:/info", {}, checkauth = False)
     if(code != 200):
         register()
-        code, content = send_get("/device_info/:device_id:", {}, checkauth = False)
+        code, content = send_get("/device/:device_id:/info", {}, checkauth = False)
 
     if(code == 200):
         while(content['device_id'] == str(config.getConfig()['device_id']) and content['linked'] == "false"):
             driverI2C.display('Code PIN:\n' + pin_code)
-            _, content = send_get("/device_info/:device_id:", {}, checkauth = False)
+            _, content = send_get("/device/:device_id:/info", {}, checkauth = False)
             time.sleep(1)
     return
 
@@ -43,7 +43,7 @@ def check_auth():
     if(config.getConfig()['device_id'] == -1):
         code_pin()
     
-    code, content = send_get("/device_info/:device_id:", {}, checkauth = False)
+    code, content = send_get("/device/:device_id:/info", {}, checkauth = False)
     if(code == 400 and content == "Appareil inconnu"):
         code_pin()
     if(code == 200):

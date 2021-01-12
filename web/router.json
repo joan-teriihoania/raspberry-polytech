@@ -154,7 +154,7 @@
 			}
 		},
 		"GET": {
-			"/device_info/:device_id": {
+			"/device/:device_id/info": {
 				"filename": "device_info.js",
 				"login": false,
 				"admin": true,
@@ -163,10 +163,6 @@
 					"success": "JSON",
 					"error": "String"
 				}
-			},
-			"/device/:device_id/*": {
-				"filename": "device.js",
-				"login": true
 			},
 			"/device/:device_id/translate": {
 				"filename": "device_translate.js",
