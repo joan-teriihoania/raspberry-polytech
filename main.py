@@ -7,7 +7,10 @@ import sys
 import core
 import driverI2C
 import driverButton
+import threading
 import driverSpeaker
+import mainMenu
+import jz_translation_server
 import driverMicro
 import time
 import config
@@ -29,13 +32,14 @@ commands = {
 ############################
 # EXIT CODES (accepted)
 ############################
+# Silent special exitCode 3 for change from menu to main 
 exitCodes = {
     2: "I cannot reach the Google Speech Recognition service",
     1: "Translation memory usage has exceeded daily quota",
     0: "Good bye!",
     -1: "An unexpected error occured during execution that caused a system crash",
     -2: "I encountered an issue with your microphone, try rebooting. If this does not resolve your problem, get your device checked in the nearest repair shop available",
-    -3: "The translation service is momentarily unavailable"
+    -3: "I cannot reach the translation service"
 }
 
 
@@ -45,6 +49,7 @@ exitCodes = {
 triggerWords = "Translate"
 systemLanguage = "en"
 waitTriggerWords = True
+
 
 
 ############################
@@ -59,6 +64,11 @@ waitTriggerWords = True
 # @Return : if an error occured (to let main loop handle it)
 ############################
 def main(waitTriggerWords=True):
+    
+    trad_status, trad = translater.translate("Translate", from_lang="en", to_lang="en")
+    if trad_status != 200:
+        core.terminate(-3)
+
     from_lang = config.getConfig()['from_lang']
     to_lang = config.getConfig()['to_lang']
     global triggerWords
@@ -122,6 +132,7 @@ def main(waitTriggerWords=True):
     return True
 
 
+
 ############################
 # MAIN (infinite) LOOP with error handler and shutdown handling
 ############################
@@ -139,6 +150,7 @@ def exec():
             # If main() returns False, there was an error
             # Runs an error message and inform the user of it
             # Then, reloop
+
             if(main(waitTriggerWords=waitTriggerWords) == False):
                 nbFailedToUnderstand += 1
                 if(nbFailedToUnderstand <= maxRetries):
@@ -162,6 +174,10 @@ def exec():
             # Checks if the error code specified is listed in exitCodes variables
             # which lists all accepted error code authorized to exit the main loop
             # and stop the process
+            if(e.code == 3):
+                core.echo("Switching to menu !")
+                return
+
             for (key, reason) in exitCodes.items():
                 if(e.code == key):
                     audio.say(reason, systemLanguage)
@@ -175,11 +191,11 @@ def exec():
                         core.terminate(e.code, reason)
                     else:
                         core.echo(reason, "ERROR")
-                        #core.echo([
-                        #    "SystemExit code "+str(e.code)+" is listed with a positive exit code",
-                        #    "By convention, this means that it is not fatal and does not require a shutdown",
-                        #], type="WARN")
-
+                        core.echo([
+                           "SystemExit code "+str(e.code)+" is listed with a positive exit code",
+                           "By convention, this means that it is not fatal and does not require a shutdown",
+                        ], type="WARN")
+                        return
             
             # If the exit code is None, there it is a termination code which
             # is not an error but only a reloop instruction
@@ -200,5 +216,20 @@ def exec():
             core.echo(stack_array, "FATAL")
         waitTriggerWords = True
 
+def run():
+    while True:
+        mainMenu.displayMenu()
+        exec()
 
-exec()
+def webConfig():
+    while not core.shutdown:
+        code, content = jz_translation_server.send_get('/device/:device_id:/config', {}, checkauth=False)
+        if(code == 200):
+            if("from_lang" in content and "to_lang" in content):
+                config.setConfig('from_lang', content['from_lang'])
+                config.setConfig('to_lang', content['to_lang'])
+        time.sleep(10)
+
+t_webconfig = threading.Thread(target=webConfig)
+t_webconfig.start()
+run()

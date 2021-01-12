@@ -2,13 +2,15 @@ import time
 import driverButton
 import driverI2C
 import menuHandler
+import config
+import core
 
 LANGUAGES = {
   "en": "ENGLISH",
   "fr": "FRANCAIS",
   'it': "ITALIANO",
   "es": "ESPANOL",
-  "ch": "CHINESE"
+  "zh-CN": "CHINESE"
 }
 
 #PIN BUTTONS
@@ -17,27 +19,34 @@ bDOWN = 3
 bSELECT = 7
 bBACK = 8
 
-position = 0
-prev_position = 0
-src = 0
-dest = 1
-driverI2C.setColor('white')
-while True:
-  #afficher menu initial
-  selected = menuHandler.input(
-    'Menu principal',
-    [
-      "SRC : " + list(LANGUAGES.values())[src],
-      "DEST: " + list(LANGUAGES.values())[dest]
-    ]
-  )
+def isButtonBackPressed():
+  return driverButton.isButtonPushed(bBACK)
 
-  if(selected != -1):
+def displayMenu():
+  # Default background color
+  driverI2C.setColor('white')
+
+  while True:
+
+    #afficher menu initial
+    selected = menuHandler.input(
+      'Menu principal',
+      [
+        "SRC : " + LANGUAGES[config.getConfig()['from_lang']],
+        "DEST: " + LANGUAGES[config.getConfig()['to_lang']]
+      ]
+    )
+
+    if(selected == -1):
+      core.echo("Switching to main !")
+      break
+
     if(selected == 0):
       temp = menuHandler.input('Selection source', list(LANGUAGES.values()))
       if temp != -1:
-        src = temp
+        config.setConfig('from_lang', list(LANGUAGES.keys())[temp])
+
     if(selected == 1):
       temp = menuHandler.input('Selection destin', list(LANGUAGES.values()))
       if temp != -1:
-        dest = temp
+        config.setConfig('to_lang', list(LANGUAGES.keys())[temp])

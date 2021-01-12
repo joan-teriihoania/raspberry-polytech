@@ -9,6 +9,7 @@ import translater
 
 import os
 import config
+import mainMenu
 import pyaudio
 import audio
 import core
@@ -274,6 +275,7 @@ def _record(waitNSecondSilence, auto_silence_threshold_stabilization=True):
 
     print()
     while 1:
+        
         streamRead = False
         try:
             streamRead = stream.read(APPLIED_CHUNK_SIZE, exception_on_overflow = exceptionOnOverflow)
@@ -355,7 +357,7 @@ def _record(waitNSecondSilence, auto_silence_threshold_stabilization=True):
                 driverI2C.setColor("green")
             snd_started = True
         
-        if snd_started and num_silent > timeoutSilence:
+        if (snd_started and num_silent > timeoutSilence) or mainMenu.isButtonBackPressed():
             # RECORD STOP
             if not(listening):
                 driverI2C.setColor("white")
@@ -366,6 +368,10 @@ def _record(waitNSecondSilence, auto_silence_threshold_stabilization=True):
     stream.stop_stream()
     stream.close()
     p.terminate()
+    
+    if(mainMenu.isButtonBackPressed()):
+        disableListeningAnimation()
+        core.terminate(3)
 
     #r = normalize(r)
     #r = trim(r)
@@ -383,6 +389,7 @@ def _record_to_file(path, waitNSecondSilence=2):
     wf.setframerate(RATE)
     wf.writeframes(b''.join(frames))
     wf.close()
+
 
 # @Desc Listens the microphone for sound and record it then saves it in the specified file and returns
 # @Params:

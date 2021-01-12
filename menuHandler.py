@@ -24,15 +24,30 @@ def isAnyButtonPressed():
   return driverButton.isButtonPushed(bSELECT) or driverButton.isButtonPushed(bBACK) or driverButton.isButtonPushed(bDOWN) or driverButton.isButtonPushed(bUP)
 
 def waitButtonToBePressed():
+  while not(isAnyButtonPressed()):
+    time.sleep(0.05)
+
+def waitButtonToBeReleased():
   while isAnyButtonPressed():
     time.sleep(0.05)
 
 def inputCursor(title, choices):
   index = 0
   prev_index = 1
-  wasButtonPressed = False
 
   while True:
+    if index != prev_index:
+      cursor0 = '>' if index == 0 else ' '
+      cursor1 = '>' if index == 1 else ' '
+      line1 = cursor0 + " " + choices[0]
+      line2 = cursor1 + " " + choices[1]
+
+      line1 = line1 if len(line1) <= 16 else line1[0:15]
+      line2 = line2 if len(line2) <= 16 else line2[0:15]
+      driverI2C.display(line1 + "\n" + line2)
+      prev_index = index
+      waitButtonToBeReleased()
+
     waitButtonToBePressed()
     if driverButton.isButtonPushed(bSELECT):
       break
@@ -48,19 +63,6 @@ def inputCursor(title, choices):
       index = len(choices)-1 
     if index >= len(choices):
       index = 0
-      
-    if index != prev_index:
-      cursor0 = '>' if index == 0 else ' '
-      cursor1 = '>' if index == 1 else ' '
-      line1 = cursor0 + " " + choices[0]
-      line2 = cursor1 + " " + choices[1]
-
-      line1 = line1 if len(line1) <= 16 else line1[0:15]
-      line2 = line2 if len(line2) <= 16 else line2[0:15]
-      driverI2C.setText(line1 + "\n" + line2)
-  
-    prev_index = index
-    wasButtonPressed = isAnyButtonPressed()
   return index
 
 def inputList(title, choices):
@@ -69,6 +71,13 @@ def inputList(title, choices):
   wasButtonPressed = False
 
   while True:
+    if index != prev_index:
+      line1 = title if len(title) <= 16 else title[0:15]
+      line2 = choices[index] if len(choices[index]) <= 16 else choices[index][0:15]
+      driverI2C.display(line1 + "\n" + line2)
+      prev_index = index
+      waitButtonToBeReleased()
+
     waitButtonToBePressed()   
     if driverButton.isButtonPushed(bSELECT):
       break
@@ -83,12 +92,4 @@ def inputList(title, choices):
       index = len(choices)-1 
     if index >= len(choices):
       index = 0 
-
-    if index != prev_index:
-      line1 = title if len(title) <= 16 else title[0:15]
-      line2 = choices[index] if len(choices[index]) <= 16 else choices[index][0:15]
-      driverI2C.setText(line1 + "\n" + line2)
-    
-    prev_index = index
-    wasButtonPressed = isAnyButtonPressed()
   return index
