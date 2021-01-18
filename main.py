@@ -223,14 +223,35 @@ def run():
 
 def webConfig():
     while not core.shutdown:
-        code, content = jz_translation_server.send_get('/device/:device_id:/config', {}, checkauth=False)
+        code, content = jz_translation_server.send_get('/device/:device_id:/config', {"mark_seen": "true"}, checkauth=False)
         if(code == 200):
             if("from_lang" in content and "to_lang" in content):
                 config.setConfig('from_lang', content['from_lang'])
                 config.setConfig('to_lang', content['to_lang'])
                 menuHandler.refresh = True
         time.sleep(5)
+        
+def invertLang():
+    while not core.shutdown:
+        if(driverButton.isButtonPushed(menuHandler.bDOWN)):
+            sec = 0
+            waitTime = 0.1
+            requiredSec = 3/waitTime
+            while(driverButton.isButtonPushed(menuHandler.bDOWN)):
+                sec += 1
+                core.print(sec)
+                core.print(requiredSec)
+                time.sleep(0.1)
+            
+            if(sec == requiredSec):
+                temp = config.getConfig()['from_lang']
+                config.setConfig('from_lang', config.getConfig()['to_lang'])
+                config.setConfig('to_lang', temp)
+                menuHandler.refresh = True
+        time.sleep(1)
 
 t_webconfig = threading.Thread(target=webConfig)
 t_webconfig.start()
+t_invert = threading.Thread(target=invertLang)
+t_invert.start()
 run()
