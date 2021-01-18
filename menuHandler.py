@@ -19,7 +19,6 @@ def input(title, choices):
   
   return inputList(title, choices)
 
-
 def isAnyButtonPressed():
   return driverButton.isButtonPushed(bSELECT) or driverButton.isButtonPushed(bBACK) or driverButton.isButtonPushed(bDOWN) or driverButton.isButtonPushed(bUP)
 

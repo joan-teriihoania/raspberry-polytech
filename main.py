@@ -229,25 +229,25 @@ def webConfig():
                 config.setConfig('from_lang', content['from_lang'])
                 config.setConfig('to_lang', content['to_lang'])
                 menuHandler.refresh = True
+                driverSpeaker.play("/home/jopro/raspberry-polytech/ressources/notif_listened.mp3", blocking=False)
         time.sleep(5)
-        
+
 def invertLang():
     while not core.shutdown:
-        if(driverButton.isButtonPushed(menuHandler.bDOWN)):
+        if(menuHandler.isAnyButtonPressed()):
             sec = 0
             waitTime = 0.1
-            requiredSec = 3/waitTime
-            while(driverButton.isButtonPushed(menuHandler.bDOWN)):
+            requiredSec = 2/waitTime
+            while(menuHandler.isAnyButtonPressed()):
                 sec += 1
-                core.print(sec)
-                core.print(requiredSec)
-                time.sleep(0.1)
+                time.sleep(waitTime)
             
-            if(sec == requiredSec):
+            if(sec >= requiredSec):
                 temp = config.getConfig()['from_lang']
                 config.setConfig('from_lang', config.getConfig()['to_lang'])
                 config.setConfig('to_lang', temp)
                 menuHandler.refresh = True
+                driverSpeaker.play("/home/jopro/raspberry-polytech/ressources/notif_listened.mp3", blocking=False)
         time.sleep(1)
 
 t_webconfig = threading.Thread(target=webConfig)
