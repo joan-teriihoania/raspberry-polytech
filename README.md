@@ -18,3 +18,6 @@ Raspberry 3
  - Google Translate
  - Speech Recognition
  - pyaudio
+
+# Execution
+Lancez le watchdog.sh après avoir modifié préalablement le chemin d'accès du fichier si nécessaire.
