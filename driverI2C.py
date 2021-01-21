@@ -7,7 +7,6 @@ import termios
 import tty
 import threading
 from RPLCD.i2c import CharLCD
-import RPi.GPIO as GPIO
 
 bus = smbus.SMBus(1)  # pour I2C-1 (0 pour I2C-0)
 

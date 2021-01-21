@@ -15,6 +15,7 @@ Téléchargez le contenu du répertoire et exécutez-le sur une Raspberry Pi 3 (
  - Google Translate
  - Speech Recognition (https://pypi.org/project/SpeechRecognition/)
  - pyaudio (https://pypi.org/project/PyAudio/)
+ - RPLCD (https://pypi.org/project/RPLCD/)
  - Python 3.7 (*Version de développement et testée*)
 
 # Installation, configuration, exécution
