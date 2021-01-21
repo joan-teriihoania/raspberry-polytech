@@ -12,7 +12,6 @@ Téléchargez le contenu du répertoire et exécutez-le sur une Raspberry Pi 3 (
 
 ## Dépendances
  - GTTS (https://pypi.org/project/gTTS/)
- - Google Translate
  - Speech Recognition (https://pypi.org/project/SpeechRecognition/)
  - pyaudio (https://pypi.org/project/PyAudio/)
  - RPLCD (https://pypi.org/project/RPLCD/)
