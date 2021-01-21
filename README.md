@@ -1,26 +1,23 @@
-# raspberry-polytech
-Projet raspberry FASE ASIOT
+# Projet raspberry FASE ASIOT
+Le traducteur ou JZ Translater (JZ pour plus court) est un appareil de traduction de langue utile pour les voyages à l'étranger.
 
-# A faire
-## Bibliothèques (équipements)
- - HAUT PARLEUR à faire (joan)
- - MICROPHONE à faire (joan)
- - CONSOLE à faire (joan)
- 
- - LED déjà fait (à peu près)
- > Indique sur la raspberry enregistre ou pas
+# Installation
+Téléchargez le contenu du répertoire.
 
- - BUTTON à faire (zahra)
- > Déclenche un enregistrement (ou pas)
+## Appareil
+Raspberry 3
 
- - ECRAN LCD déjà fait (à peu près)
- > Rouge : ECHEC DE DEMARRAGE
- > Orange: DEMARRAGE EN COURS
- > Jaune : DEMARRÉ ! CONNEXION AU SERVEUR INTERNET
- > Vert  : DEMARRÉ ET CONNECTÉ AU SERVEUR INTERNET
- > Bleu  : DEMARRÉ MAIS ECHEC DE CONNEXION AU SERVEUR INTERNET
+### Composants
+ - Microphone
+ - Haut-parleur
+ - Ecran LCD
+ - 3 boutons
 
-## Modules
- - Tester googletrans (python)
- - Tester speech to text (https://www.geeksforgeeks.org/python-convert-speech-to-text-and-text-to-speech/)
- - Tester text to speech (https://pypi.org/project/pyttsx3/)
+## Dépendances
+ - GTTS
+ - Google Translate
+ - Speech Recognition
+ - pyaudio
+
+# Execution
+Lancez le watchdog.sh après avoir modifié préalablement le chemin d'accès du fichier si nécessaire.
