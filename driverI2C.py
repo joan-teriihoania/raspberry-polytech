@@ -158,7 +158,8 @@ def setText(texte, instant=False):
 	length = 0
 
 	if len(texte) > windowSize * windowLines:
-		texte = texte[0:15]
+		texte = texte[0:windowSize*windowLines]
+		print(texte)
 
 	for char in texte:
 		if char == '\n':

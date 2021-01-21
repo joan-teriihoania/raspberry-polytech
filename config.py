@@ -1,7 +1,13 @@
-import core
 import json
+from pathlib import Path
 
 filename = './config.json'
+config_file = Path(filename)
+if(not config_file.is_file()):
+    f = open(filename, 'w+')
+    f.write("{}")
+    f.close()
+
 data = json.load(open(filename, 'r'))
 
 def setConfig(field, value):
@@ -21,3 +27,4 @@ if("from_lang" not in data):
     setConfig("from_lang", "en")
 if("to_lang" not in data):
     setConfig("to_lang", "fr")
+

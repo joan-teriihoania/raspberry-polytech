@@ -237,7 +237,7 @@ def invertLang():
         if(menuHandler.isAnyButtonPressed()):
             sec = 0
             waitTime = 0.1
-            requiredSec = 2/waitTime
+            requiredSec = 1/waitTime
             while(menuHandler.isAnyButtonPressed()):
                 sec += 1
                 time.sleep(waitTime)
