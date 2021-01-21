@@ -1,14 +1,13 @@
 function configure_device(device_id){
+    formattedLangList = {}
+    for(const [code, lang] of Object.entries(langCodes)){
+      formattedLangList[code] = lang.name
+    }
+
     Swal.mixin({
         input: 'select',
         inputOptions: {
-            'Sélectionner la langue': {
-                "es": "Español",
-                "fr": "Français",
-                "en": "English",
-                "zh-CN": "中文",
-                "it": "Italiano"
-            }
+            'Sélectionner la langue': formattedLangList
         },
         confirmButtonText: 'Suivant &rarr;',
         showCancelButton: true,
@@ -31,7 +30,6 @@ function configure_device(device_id){
                 text: "Configuration en cours..."
             })
             Swal.showLoading()
-            console.log(result.value)
             $.ajax({
                 url: "/api/v1/device/" + device_id + "/config",
                 type: "POST",

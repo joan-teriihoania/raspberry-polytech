@@ -32,6 +32,14 @@
 			"login": true,
 			"autorefresh": true
 		},
+		"/account/device/:device_id": {
+			"filename": "device",
+			"title": "Appareil",
+			"css": [],
+			"js": [],
+			"login": true,
+			"autorefresh": true
+		},
 		"/login": {
 			"filename": "login",
 			"title": "Connexion",

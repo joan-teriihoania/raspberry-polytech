@@ -144,7 +144,7 @@
         },
         {
             "name": "quota",
-            "type": "INTEGER DEFAULT 10",
+            "type": "INTEGER DEFAULT 1000",
             "primary": false,
             "not_null": true
         }
